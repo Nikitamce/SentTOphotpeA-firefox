@@ -1,103 +1,51 @@
 # Send to Photopea (Firefox)
 
-Firefox extension: right‑click any image (or video) → open it in [Photopea](https://www.photopea.com), or place it on a custom canvas size (Instagram, Full HD, A4, your own presets).
+Right‑click any image (or video) → open it in [Photopea](https://www.photopea.com), or place it on a custom canvas (Full HD, Instagram, A4, your own presets).
 
-**Version:** 1.1  
-**Author:** Nikita  
-**Extension ID:** `send-to-photopea@nikita.dev`
+**Version:** 1.1 · **Author:** Nikita · **ID:** `send-to-photopea@nikita.dev`
 
----
-
-## Features
-
-- Context menu on **images** and **videos**
-- **Open image** as‑is in Photopea
-- **Canvas presets** with name, size, DPI, icon, enable/disable
-- Up to **15 presets** (add / remove in settings)
-- Placement modes: **center**, **fit**, **fill**, **stretch**
-- Canvas background: **white**, **transparent**, **black**
-- Large images: transferred via **Photopea bridge** (not a multi‑MB URL hash)
-- Fallback extraction from the page (`srcset`, `data-src`, canvas, same‑origin fetch)
-- **Popup**: open Photopea, blank canvas per preset, recent images
-- **Shortcut:** `Alt+Shift+P` — open last right‑clicked image
-- Notifications when extraction fails (optional)
-- **Locales (top world languages + extras):**  
-  `en`, `zh_CN`, `hi`, `es`, `fr`, `ar`, `bn`, `pt_BR`, `ru`, `ur`  
-  plus: `de`, `it`, `ja`, `ko`, `tr`  
-- **Manual UI language** in Settings (override browser auto language)
-- Opens Photopea via **Live Messaging** (ArrayBuffer) + `environment` (`intro: false`, matching `lang`)
-- **Export** PNG / JPG / PSD from Photopea (context menu on photopea.com or popup)
-- Optional folder `firefox-customization/` — **not** part of the WebExtension (userChrome helpers)
+**Languages:** [English](README.md) · [Русский](README.ru.md)
 
 ---
 
-## Install (temporary, for development)
+## User documentation (detailed)
 
-1. Open Firefox → `about:debugging#/runtime/this-firefox`
-2. **Load Temporary Add-on…**
-3. Select `manifest.json` from this folder
-4. Right‑click any image → **🎨 Photopea**
+| Language | Guide |
+|----------|--------|
+| **English** | **[docs/USER_GUIDE_EN.md](docs/USER_GUIDE_EN.md)** — features, settings, placement modes, export, FAQ |
+| **Русский** | **[docs/USER_GUIDE_RU.md](docs/USER_GUIDE_RU.md)** — возможности, настройки, режимы, экспорт, FAQ |
 
-Permanent install: pack as `.zip` (see below) or publish on [addons.mozilla.org](https://addons.mozilla.org/).
-
-### Package for AMO / manual install
-
-Include only extension files (not `firefox-customization/`, not nested copies):
-
-```text
-manifest.json
-background.js
-shared/
-content/
-popup/
-options/
-icons/
-_locales/
-```
-
-Zip the **contents** of the extension root (so `manifest.json` is at the zip root).
+> Full manuals live under `docs/`, not only in the root README — so GitHub stays readable and each language has a complete guide.
 
 ---
 
-## Permissions
+## Features (summary)
 
-| Permission | Why |
-|------------|-----|
-| `contextMenus` | Right‑click menu on images |
-| `storage` | Presets, settings, recent list |
-| `activeTab` / `tabs` | Extract image from the page, open Photopea |
-| `notifications` | Error feedback instead of `alert()` |
-| `<all_urls>` | Download images that block hotlinking (CORS) so Photopea can load them |
-| `webRequest` + `webRequestBlocking` | Read image bytes when CORS hides the body (e.g. addons.mozilla.org); temporary ACAO unlock for those URLs |
-
-No analytics. No data collection (`data_collection_permissions: none`).
+- Context menu: **Open image** / **To canvas** (presets)
+- Up to **15** canvas presets (size, DPI, icon, on/off)
+- Placement: **center**, **fit**, **fill**, **stretch** + canvas background
+- Works on many “locked” sites (CORS / AMO workarounds)
+- Popup: Photopea, blank canvas, recent images, export
+- **Export** PNG / JPG / PSD from Photopea
+- UI language: auto or manual (15 locales)
+- Shortcut: **Alt+Shift+P** (last image)
 
 ---
 
-## Settings
+## Install (temporary)
 
-Open from the toolbar popup → **Settings**, or `about:addons` → extension → Preferences.
+1. Firefox → `about:debugging#/runtime/this-firefox`
+2. **Load Temporary Add-on…** → select `manifest.json`
+3. Right‑click an image → **🎨 Photopea**
 
-- Open in new / current tab  
-- Image placement & canvas fill  
-- Default DPI  
-- Error notifications  
-- Preset editor  
-
-Shortcut can be changed: `about:addons` → gear → **Manage Extension Shortcuts**.
+Package for AMO: zip extension root so `manifest.json` is at the zip root.  
+Do **not** include `firefox-customization/` or nested `photopea/` copies.
 
 ---
 
-## How image open works
+## Permissions (short)
 
-1. Try `fetch` / stream filter (with optional CORS unlock)  
-2. On CORS failure (typical for `addons.mozilla.org`): open image in a small popup → **`tabs.captureTab`** → auto-crop margins  
-3. Open Photopea via **URL hash** with embedded data URL (no content-script bridge required)  
-4. Canvas presets use hash `files` + `script`  
-
-### Known limitation
-
-`addons.mozilla.org` blocks extension content scripts and often CORS-hides image bodies. Tab-capture bypasses that. If capture is blocked by policy, use “Copy Image” → paste in Photopea.
+`contextMenus`, `storage`, `tabs`, `notifications`, `downloads`, `<all_urls>`, `webRequest` (+ blocking) — for menus, settings, opening Photopea, export, and loading images. No analytics.
 
 ---
 
@@ -106,25 +54,16 @@ Shortcut can be changed: `about:addons` → gear → **Manage Extension Shortcut
 ```text
 manifest.json
 background.js
-shared/defaults.js       # defaults, normalize helpers
-shared/photopea-url.js   # hash URL builders
-content/extract-image.js
-content/photopea-bridge.js
-popup/
-options/
-icons/
-_locales/
-firefox-customization/   # optional Firefox UI tweaks (not the extension)
+shared/          # defaults, i18n, Photopea URLs, image fetch
+content/         # extract-image, photopea-bridge
+popup/ options/ icons/ _locales/
+docs/            # full user guides (EN + RU)
+firefox-customization/   # NOT part of the WebExtension
 ```
-
----
-
-## Manifest V3 note
-
-This build is **Manifest V2** (Firefox). When migrating to MV3: event page / service worker, `menus` API, no string `code` injection (already using script files).
 
 ---
 
 ## License
 
-Use and modify freely for personal or project needs. Photopea is a third‑party product ([photopea.com](https://www.photopea.com)).
+Use and modify freely for personal or project needs.  
+Photopea is a third‑party product ([photopea.com](https://www.photopea.com)).
