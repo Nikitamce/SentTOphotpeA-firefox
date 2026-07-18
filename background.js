@@ -1,5 +1,5 @@
 // ============================================================
-// Send to Photopea — Background Script (v1.1.3)
+// Send to Photopea — Background Script (v1.1)
 // Reliable path: get image bytes → open Photopea via URL hash
 // No content-script bridge required for the main flow.
 // ============================================================

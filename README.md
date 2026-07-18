@@ -2,7 +2,7 @@
 
 Firefox extension: right‑click any image (or video) → open it in [Photopea](https://www.photopea.com), or place it on a custom canvas size (Instagram, Full HD, A4, your own presets).
 
-**Version:** 1.1.3  
+**Version:** 1.1  
 **Author:** Nikita  
 **Extension ID:** `send-to-photopea@nikita.dev`
 
