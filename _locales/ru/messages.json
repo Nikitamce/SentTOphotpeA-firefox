@@ -223,5 +223,26 @@
   },
   "alertCanvasPlaceFailed": {
     "message": "Картинка открыта в Photopea, но авто-перенос на холст не удался. Можно вставить вручную в новый документ."
+  },
+  "menuExportParent": {
+    "message": "💾 Экспорт из Photopea"
+  },
+  "menuExportPng": {
+    "message": "Скачать PNG"
+  },
+  "menuExportJpg": {
+    "message": "Скачать JPG"
+  },
+  "menuExportPsd": {
+    "message": "Скачать PSD"
+  },
+  "exportHeading": {
+    "message": "Экспорт из Photopea"
+  },
+  "alertNotPhotopea": {
+    "message": "Сначала откройте вкладку Photopea, затем экспортируйте."
+  },
+  "alertExportFailed": {
+    "message": "Не удалось экспортировать документ из Photopea. Убедитесь, что файл открыт."
   }
 }

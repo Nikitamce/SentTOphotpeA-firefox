@@ -8,6 +8,10 @@ document.addEventListener("DOMContentLoaded", function () {
   var recentList = document.getElementById("recent-list");
   var btnSettings = document.getElementById("btn-settings");
   var btnOpen = document.getElementById("btn-open-photopea");
+  var exportSection = document.getElementById("export-section");
+  var btnExportPng = document.getElementById("btn-export-png");
+  var btnExportJpg = document.getElementById("btn-export-jpg");
+  var btnExportPsd = document.getElementById("btn-export-psd");
 
   function t(key, subs) {
     return stpT(key, subs) || "";
@@ -21,7 +25,22 @@ document.addEventListener("DOMContentLoaded", function () {
         stpLocalizeRoot(document);
         renderPresets(stpNormalizePresets(data.presets));
         renderRecent(Array.isArray(data.recent) ? data.recent : []);
+        return refreshExportSection();
       });
+    });
+  }
+
+  function refreshExportSection() {
+    return browser.runtime.sendMessage({ type: "stp-is-photopea-tab" }).then(function (res) {
+      if (exportSection) exportSection.hidden = !(res && res.ok);
+    }).catch(function () {
+      if (exportSection) exportSection.hidden = true;
+    });
+  }
+
+  function doExport(format) {
+    browser.runtime.sendMessage({ type: "stp-export", format: format }).then(function () {
+      window.close();
     });
   }
 
@@ -34,6 +53,10 @@ document.addEventListener("DOMContentLoaded", function () {
     browser.tabs.create({ url: "https://www.photopea.com" });
     window.close();
   });
+
+  if (btnExportPng) btnExportPng.addEventListener("click", function () { doExport("png"); });
+  if (btnExportJpg) btnExportJpg.addEventListener("click", function () { doExport("jpg"); });
+  if (btnExportPsd) btnExportPsd.addEventListener("click", function () { doExport("psd"); });
 
   function renderPresets(presets) {
     listEl.innerHTML = "";

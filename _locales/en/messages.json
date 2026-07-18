@@ -223,5 +223,26 @@
   },
   "alertCanvasPlaceFailed": {
     "message": "Image opened in Photopea, but auto place on canvas failed. You can copy/paste onto a new document."
+  },
+  "menuExportParent": {
+    "message": "💾 Export from Photopea"
+  },
+  "menuExportPng": {
+    "message": "Download PNG"
+  },
+  "menuExportJpg": {
+    "message": "Download JPG"
+  },
+  "menuExportPsd": {
+    "message": "Download PSD"
+  },
+  "exportHeading": {
+    "message": "Export from Photopea"
+  },
+  "alertNotPhotopea": {
+    "message": "Open a Photopea tab first, then export."
+  },
+  "alertExportFailed": {
+    "message": "Could not export the document from Photopea. Make sure a file is open."
   }
 }

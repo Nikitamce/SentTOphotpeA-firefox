@@ -25,6 +25,8 @@ Firefox extension: right‑click any image (or video) → open it in [Photopea](
   `en`, `zh_CN`, `hi`, `es`, `fr`, `ar`, `bn`, `pt_BR`, `ru`, `ur`  
   plus: `de`, `it`, `ja`, `ko`, `tr`  
 - **Manual UI language** in Settings (override browser auto language)
+- Opens Photopea via **Live Messaging** (ArrayBuffer) + `environment` (`intro: false`, matching `lang`)
+- **Export** PNG / JPG / PSD from Photopea (context menu on photopea.com or popup)
 - Optional folder `firefox-customization/` — **not** part of the WebExtension (userChrome helpers)
 
 ---

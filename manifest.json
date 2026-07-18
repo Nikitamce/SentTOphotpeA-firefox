@@ -17,6 +17,7 @@
     "activeTab",
     "notifications",
     "tabs",
+    "downloads",
     "webRequest",
     "webRequestBlocking",
     "<all_urls>"

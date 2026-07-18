@@ -265,18 +265,22 @@ function stpBuildCanvasCopyPasteScript(width, height, options) {
   ].filter(Boolean).join("\n");
 }
 
-function stpBuildOpenUrl(imageUrl) {
+function stpBuildOpenUrl(imageUrl, settings) {
   var config = { files: [imageUrl] };
+  var env = stpBuildEnvironmentObject(settings);
+  if (env) config.environment = env;
   return "https://www.photopea.com#" + encodeURIComponent(JSON.stringify(config));
 }
 
-function stpBuildCanvasUrl(imageUrl, width, height, options) {
+function stpBuildCanvasUrl(imageUrl, width, height, options, settings) {
   var script = stpBuildCanvasPlaceScript(width, height, options);
   var config = { files: [imageUrl], script: script };
+  var env = stpBuildEnvironmentObject(settings);
+  if (env) config.environment = env;
   return "https://www.photopea.com#" + encodeURIComponent(JSON.stringify(config));
 }
 
-function stpBuildBlankUrl(width, height, options) {
+function stpBuildBlankUrl(width, height, options, settings) {
   options = options || {};
   var dpi = options.dpi || 72;
   var w = Math.max(1, parseInt(width, 10) || 1920);
@@ -287,5 +291,61 @@ function stpBuildBlankUrl(width, height, options) {
     options.fill === "black" ? stpBlackFillScript("black") : "",
     stpFitViewScript()
   ].filter(Boolean).join("\n");
-  return "https://www.photopea.com#" + encodeURIComponent(JSON.stringify({ script: script }));
+  var config = { script: script };
+  var env = stpBuildEnvironmentObject(settings);
+  if (env) config.environment = env;
+  return "https://www.photopea.com#" + encodeURIComponent(JSON.stringify(config));
+}
+
+/**
+ * Map extension locale → Photopea environment.lang
+ * @see https://www.photopea.com/api/  Environment
+ */
+function stpPhotopeaLangFromSettings(settings) {
+  settings = settings || {};
+  var pref = settings.uiLanguage || "auto";
+  var loc = "en";
+  if (typeof stpResolveLocale === "function") {
+    loc = stpResolveLocale(pref);
+  } else if (pref && pref !== "auto") {
+    loc = pref;
+  }
+  var map = {
+    en: "en",
+    zh_CN: "zh",
+    hi: "hi",
+    es: "es",
+    fr: "fr",
+    ar: "ar",
+    bn: "bn",
+    pt_BR: "pt",
+    ru: "ru",
+    ur: "ur",
+    de: "de",
+    it: "it",
+    ja: "ja",
+    ko: "ko",
+    tr: "tr"
+  };
+  return map[loc] || "en";
+}
+
+/**
+ * environment block: no intro splash, match extension language
+ */
+function stpBuildEnvironmentObject(settings) {
+  return {
+    intro: false,
+    lang: stpPhotopeaLangFromSettings(settings)
+  };
+}
+
+/**
+ * Start Photopea with environment only (no files) — for ArrayBuffer messaging path
+ */
+function stpBuildStartUrl(settings) {
+  var config = {
+    environment: stpBuildEnvironmentObject(settings)
+  };
+  return "https://www.photopea.com#" + encodeURIComponent(JSON.stringify(config));
 }
