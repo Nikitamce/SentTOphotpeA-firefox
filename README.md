@@ -1,10 +1,10 @@
+> **Language / Язык:** **English** · [Русский](README.ru.md)
+
 # Send to Photopea (Firefox)
 
 Right‑click any image (or video) → open it in [Photopea](https://www.photopea.com), or place it on a custom canvas (Full HD, Instagram, A4, your own presets).
 
 **Version:** 1.1 · **Author:** Nikita · **ID:** `send-to-photopea@nikita.dev`
-
-**Languages:** [English](README.md) · [Русский](README.ru.md)
 
 ---
 

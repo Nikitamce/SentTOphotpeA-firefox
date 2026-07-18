@@ -1,10 +1,10 @@
+> **Язык / Language:** [English](README.md) · **Русский**
+
 # Send to Photopea (Firefox)
 
 Правый клик по изображению (или видео) → открыть в [Photopea](https://www.photopea.com) или положить на холст (Full HD, Instagram, A4, свои пресеты).
 
 **Версия:** 1.1 · **Автор:** Nikita · **ID:** `send-to-photopea@nikita.dev`
-
-**Языки документации:** [English](README.md) · [Русский](README.ru.md)
 
 ---
 
