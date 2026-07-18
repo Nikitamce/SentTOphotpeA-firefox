@@ -3,7 +3,7 @@
 // ============================================================
 
 var STP = {
-  VERSION: "1.1.8",
+  VERSION: "1.1.9",
   MAX_PRESETS: 15,
   MAX_RECENT: 8,
   /** Data URLs longer than this go through Photopea bridge (not URL hash). */
@@ -15,7 +15,8 @@ var STP = {
     fitMode: "center",      // center | fit | fill | stretch
     canvasFill: "white",    // white | transparent | black
     defaultDpi: 72,
-    notifyOnError: true
+    notifyOnError: true,
+    uiLanguage: "auto"      // auto | en | ru | … (see shared/i18n.js)
   },
 
   DEFAULT_PRESETS: [
@@ -68,5 +69,11 @@ function stpNormalizeSettings(s) {
   if (["white", "transparent", "black"].indexOf(s.canvasFill) !== -1) d.canvasFill = s.canvasFill;
   if (s.defaultDpi) d.defaultDpi = Math.max(1, Math.min(1200, parseInt(s.defaultDpi, 10) || 72));
   d.notifyOnError = s.notifyOnError !== false;
+  if (s.uiLanguage === "auto" || (typeof stpIsValidLocaleCode === "function" && stpIsValidLocaleCode(s.uiLanguage))) {
+    d.uiLanguage = s.uiLanguage;
+  } else if (s.uiLanguage && typeof s.uiLanguage === "string") {
+    // keep auto if unknown code
+    d.uiLanguage = "auto";
+  }
   return d;
 }

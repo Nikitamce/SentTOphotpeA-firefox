@@ -23,7 +23,8 @@ Firefox extension: right‑click any image (or video) → open it in [Photopea](
 - Notifications when extraction fails (optional)
 - **Locales (top world languages + extras):**  
   `en`, `zh_CN`, `hi`, `es`, `fr`, `ar`, `bn`, `pt_BR`, `ru`, `ur`  
-  plus: `de`, `it`, `ja`, `ko`, `tr`
+  plus: `de`, `it`, `ja`, `ko`, `tr`  
+- **Manual UI language** in Settings (override browser auto language)
 - Optional folder `firefox-customization/` — **not** part of the WebExtension (userChrome helpers)
 
 ---

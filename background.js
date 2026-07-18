@@ -41,19 +41,41 @@ function pushRecent(entry) {
   });
 }
 
+function t(key, subs) {
+  if (typeof stpT === "function") {
+    var s = stpT(key, subs);
+    if (s) return s;
+  }
+  try {
+    return browser.i18n.getMessage(key, subs) || "";
+  } catch (e) {
+    return "";
+  }
+}
+
+function ensureI18n() {
+  return getSettings().then(function (settings) {
+    if (typeof stpI18nInit === "function") {
+      return stpI18nInit(settings.uiLanguage || "auto");
+    }
+  });
+}
+
 function notifyError(message) {
   getSettings().then(function (settings) {
     if (!settings.notifyOnError) return;
-    try {
-      browser.notifications.create({
-        type: "basic",
-        iconUrl: browser.runtime.getURL("icons/icon.svg"),
-        title: browser.i18n.getMessage("extensionName") || "Send to Photopea",
-        message: message
-      });
-    } catch (e) {
-      console.warn("Notification failed:", e);
-    }
+    return ensureI18n().then(function () {
+      try {
+        browser.notifications.create({
+          type: "basic",
+          iconUrl: browser.runtime.getURL("icons/icon.svg"),
+          title: t("extensionName") || "Send to Photopea",
+          message: message
+        });
+      } catch (e) {
+        console.warn("Notification failed:", e);
+      }
+    });
   });
 }
 
@@ -423,7 +445,7 @@ function openImageThenPlaceOnCanvas(dataUrl, width, height, options, openIn) {
   var openUrl = useOneShot ? oneShotUrl : stpBuildOpenUrl(dataUrl);
   if (openUrl.length > 1.8e6) {
     notifyError(
-      browser.i18n.getMessage("alertImageTooLargeCanvas") ||
+      t("alertImageTooLargeCanvas") ||
       "Image too large — opened as-is."
     );
     return openTab(stpBuildOpenUrl(dataUrl), openIn);
@@ -479,7 +501,7 @@ function openImageThenPlaceOnCanvas(dataUrl, width, height, options, openIn) {
           console.log("STP: copy/paste script ok =", ok2);
           if (!ok2) {
             notifyError(
-              browser.i18n.getMessage("alertCanvasPlaceFailed") ||
+              t("alertCanvasPlaceFailed") ||
               "Image opened, but canvas size could not be applied automatically."
             );
           }
@@ -493,7 +515,7 @@ function openImageThenPlaceOnCanvas(dataUrl, width, height, options, openIn) {
     }).catch(function (err) {
       console.error("STP: canvas flow error", err);
       notifyError(
-        browser.i18n.getMessage("alertCanvasPlaceFailed") ||
+        t("alertCanvasPlaceFailed") ||
         "Could not apply canvas size. Image should still be open."
       );
       return tab;
@@ -522,7 +544,7 @@ function openInPhotopea(payload) {
       var openUrl = stpBuildOpenUrl(dataUrl);
       if (openUrl.length > 1.8e6) {
         notifyError(
-          browser.i18n.getMessage("alertManualCopy") ||
+          t("alertManualCopy") ||
           "Image is too large for the URL method. Copy Image → paste in Photopea."
         );
         return openTab(STP.PHOTOPEA_ORIGIN, openIn);
@@ -547,42 +569,44 @@ function openInPhotopea(payload) {
 // ------ Context menus ------
 
 function createContextMenus() {
-  return browser.contextMenus.removeAll().then(function () {
-    browser.contextMenus.create({
-      id: "photopea-parent",
-      title: browser.i18n.getMessage("menuParent") || "🎨 Photopea",
-      contexts: ["image", "video"]
-    });
+  return ensureI18n().then(function () {
+    return browser.contextMenus.removeAll().then(function () {
+      browser.contextMenus.create({
+        id: "photopea-parent",
+        title: t("menuParent") || "🎨 Photopea",
+        contexts: ["image", "video"]
+      });
 
-    browser.contextMenus.create({
-      id: "photopea-open",
-      parentId: "photopea-parent",
-      title: browser.i18n.getMessage("menuOpen") || "📷 Open image",
-      contexts: ["image", "video"]
-    });
+      browser.contextMenus.create({
+        id: "photopea-open",
+        parentId: "photopea-parent",
+        title: t("menuOpen") || "📷 Open image",
+        contexts: ["image", "video"]
+      });
 
-    browser.contextMenus.create({
-      id: "photopea-sep",
-      parentId: "photopea-parent",
-      type: "separator",
-      contexts: ["image", "video"]
-    });
+      browser.contextMenus.create({
+        id: "photopea-sep",
+        parentId: "photopea-parent",
+        type: "separator",
+        contexts: ["image", "video"]
+      });
 
-    return getPresets().then(function (presets) {
-      presets.forEach(function (preset) {
-        if (!preset.enabled) return;
-        var menuTitle = browser.i18n.getMessage("menuPreset", [
-          preset.icon || "🖼",
-          preset.name,
-          String(preset.width),
-          String(preset.height)
-        ]) || ((preset.icon || "🖼") + " " + preset.name + " (" + preset.width + "×" + preset.height + ")");
+      return getPresets().then(function (presets) {
+        presets.forEach(function (preset) {
+          if (!preset.enabled) return;
+          var menuTitle = t("menuPreset", [
+            preset.icon || "🖼",
+            preset.name,
+            String(preset.width),
+            String(preset.height)
+          ]) || ((preset.icon || "🖼") + " " + preset.name + " (" + preset.width + "×" + preset.height + ")");
 
-        browser.contextMenus.create({
-          id: "photopea-preset-" + preset.id,
-          parentId: "photopea-parent",
-          title: menuTitle,
-          contexts: ["image", "video"]
+          browser.contextMenus.create({
+            id: "photopea-preset-" + preset.id,
+            parentId: "photopea-parent",
+            title: menuTitle,
+            contexts: ["image", "video"]
+          });
         });
       });
     });
@@ -626,7 +650,7 @@ function handleImageAction(menuItemId, imageUrl, tab) {
     .catch(function (err) {
       console.error("Image action failed:", err);
       notifyError(
-        browser.i18n.getMessage("alertManualCopy") ||
+        t("alertManualCopy") ||
         "Could not extract the image. Copy Image → paste into Photopea (Ctrl+V)."
       );
 
@@ -655,7 +679,7 @@ function handleImageAction(menuItemId, imageUrl, tab) {
 browser.contextMenus.onClicked.addListener(function (info, tab) {
   var imageUrl = info.srcUrl || null;
   if (!imageUrl) {
-    notifyError(browser.i18n.getMessage("notifyNoImage") || "No image URL on this item.");
+    notifyError(t("notifyNoImage") || "No image URL on this item.");
     return;
   }
   handleImageAction(info.menuItemId, imageUrl, tab);
@@ -684,11 +708,13 @@ browser.runtime.onInstalled.addListener(function () {
   }).then(createContextMenus);
 });
 
-createContextMenus();
+// Load UI language, then menus
+ensureI18n().then(createContextMenus);
 
 browser.storage.onChanged.addListener(function (changes, area) {
   if (area === "local" && (changes.presets || changes.settings)) {
-    createContextMenus();
+    // Language (or any settings) changed — reload i18n then menus
+    ensureI18n().then(createContextMenus);
   }
 });
 
@@ -697,7 +723,7 @@ browser.commands.onCommand.addListener(function (command) {
   var src = lastImageContext.srcUrl;
   var tabId = lastImageContext.tabId;
   if (!src) {
-    notifyError(browser.i18n.getMessage("notifyNoImage") ||
+    notifyError(t("notifyNoImage") ||
       "No image yet. Right‑click an image first, then use the shortcut.");
     openTab(STP.PHOTOPEA_ORIGIN, "newTab");
     return;

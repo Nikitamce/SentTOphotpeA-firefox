@@ -35,6 +35,14 @@
 
         <div class="settings-grid">
           <div class="field">
+            <label class="field__label" for="setting-uiLanguage" data-i18n="labelUiLanguage">Interface language</label>
+            <select id="setting-uiLanguage" class="field__input field__select" data-setting="uiLanguage">
+              <!-- filled by options.js -->
+            </select>
+            <p class="field__hint" data-i18n="uiLanguageHint">Auto follows the browser language. Pick a language to override.</p>
+          </div>
+
+          <div class="field">
             <label class="field__label" for="setting-openIn" data-i18n="labelOpenIn">Open in</label>
             <select id="setting-openIn" class="field__input field__select" data-setting="openIn">
               <option value="newTab" data-i18n="optNewTab">New tab</option>
@@ -184,6 +192,7 @@
   </template>
 
   <script src="../shared/defaults.js"></script>
+  <script src="../shared/i18n.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

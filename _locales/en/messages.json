@@ -77,6 +77,15 @@
   "settingsSectionDesc": {
     "message": "How Photopea opens and how images are placed on the canvas."
   },
+  "labelUiLanguage": {
+    "message": "Interface language"
+  },
+  "optLangAuto": {
+    "message": "Auto (browser language)"
+  },
+  "uiLanguageHint": {
+    "message": "Auto follows the browser language. Choose a language to override it."
+  },
   "labelOpenIn": {
     "message": "Open in"
   },

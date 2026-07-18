@@ -1,6 +1,6 @@
 // ============================================================
 // Send to Photopea — Options Script
-// Presets (add/remove), general settings, save / reset
+// Presets, general settings, UI language override
 // ============================================================
 
 const MAX_PREVIEW_SIZE = 44;
@@ -13,29 +13,28 @@ document.addEventListener("DOMContentLoaded", function () {
   const presetCount = document.getElementById("preset-count");
   const toast = document.getElementById("toast");
   const headerSubtitle = document.getElementById("header-subtitle");
+  const langSelect = document.getElementById("setting-uiLanguage");
 
   let currentPresets = [];
   let currentSettings = stpCloneDefaultSettings();
 
-  setDocumentLang();
-  localizePage();
-  headerSubtitle.textContent = "v" + STP.VERSION + " — " +
-    (browser.i18n.getMessage("optionsHeaderSubtitleShort") || "Extension settings");
+  function t(key, subs) {
+    return stpT(key, subs) || "";
+  }
 
-  browser.storage.local.get(["presets", "settings"]).then(function (data) {
-    currentPresets = stpNormalizePresets(data.presets);
-    currentSettings = stpNormalizeSettings(data.settings);
-    applySettingsToForm();
-    renderAll();
-  });
-
-  // Settings form live updates
-  document.querySelectorAll("[data-setting]").forEach(function (el) {
-    var evt = el.type === "checkbox" ? "change" : "change";
-    el.addEventListener(evt, function () {
-      readSettingsFromForm();
-    });
-  });
+  function refreshChrome() {
+    stpSetDocumentLangAttr();
+    stpLocalizeRoot(document);
+    headerSubtitle.textContent = "v" + STP.VERSION + " — " +
+      (t("optionsHeaderSubtitleShort") || "Extension settings");
+    var docTitle = t("optionsTitle");
+    if (docTitle) document.title = docTitle;
+    // rebuild language option "Auto" label after localize
+    if (langSelect) {
+      var keep = langSelect.value;
+      stpFillLanguageSelect(langSelect, keep || currentSettings.uiLanguage || "auto");
+    }
+  }
 
   function applySettingsToForm() {
     var openIn = document.getElementById("setting-openIn");
@@ -48,6 +47,9 @@ document.addEventListener("DOMContentLoaded", function () {
     if (canvasFill) canvasFill.value = currentSettings.canvasFill;
     if (defaultDpi) defaultDpi.value = currentSettings.defaultDpi;
     if (notify) notify.checked = currentSettings.notifyOnError !== false;
+    if (langSelect) {
+      stpFillLanguageSelect(langSelect, currentSettings.uiLanguage || "auto");
+    }
   }
 
   function readSettingsFromForm() {
@@ -56,7 +58,8 @@ document.addEventListener("DOMContentLoaded", function () {
       fitMode: document.getElementById("setting-fitMode").value,
       canvasFill: document.getElementById("setting-canvasFill").value,
       defaultDpi: parseInt(document.getElementById("setting-defaultDpi").value, 10) || 72,
-      notifyOnError: document.getElementById("setting-notifyOnError").checked
+      notifyOnError: document.getElementById("setting-notifyOnError").checked,
+      uiLanguage: langSelect ? langSelect.value : "auto"
     });
   }
 
@@ -78,14 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var clone = template.content.cloneNode(true);
     var card = clone.querySelector(".preset-editor");
 
-    clone.querySelectorAll("[data-i18n]").forEach(function (el) {
-      var text = browser.i18n.getMessage(el.dataset.i18n);
-      if (text) el.textContent = text;
-    });
-    clone.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
-      var text = browser.i18n.getMessage(el.dataset.i18nPlaceholder);
-      if (text) el.placeholder = text;
-    });
+    stpLocalizeRoot(clone);
 
     if (!preset.enabled) card.classList.add("preset-editor--disabled");
 
@@ -93,13 +89,13 @@ document.addEventListener("DOMContentLoaded", function () {
     inputs.forEach(function (input) { input.dataset.index = index; });
 
     card.querySelector(".preset-editor__number").textContent =
-      browser.i18n.getMessage("presetNum", String(index + 1)) || ("Preset " + (index + 1));
+      t("presetNum", String(index + 1)) || ("Preset " + (index + 1));
 
     var enabledInput = card.querySelector('[data-field="enabled"]');
     enabledInput.checked = preset.enabled;
     card.querySelector(".toggle__label").textContent = preset.enabled
-      ? (browser.i18n.getMessage("statusActive") || "Active")
-      : (browser.i18n.getMessage("statusDisabled") || "Disabled");
+      ? (t("statusActive") || "Active")
+      : (t("statusDisabled") || "Disabled");
 
     card.querySelector('[data-field="icon"]').value = preset.icon || "🖼";
     card.querySelector('[data-field="name"]').value = preset.name;
@@ -114,10 +110,10 @@ document.addEventListener("DOMContentLoaded", function () {
     previewLabel.textContent = preset.width + " × " + preset.height;
 
     var removeBtn = card.querySelector('[data-action="remove"]');
-    removeBtn.title = browser.i18n.getMessage("btnRemovePreset") || "Remove";
+    removeBtn.title = t("btnRemovePreset") || "Remove";
     removeBtn.addEventListener("click", function () {
       if (currentPresets.length <= 1) {
-        showToast(browser.i18n.getMessage("errMinPresets") || "Keep at least one preset", "info");
+        showToast(t("errMinPresets") || "Keep at least one preset", "info");
         return;
       }
       currentPresets.splice(index, 1);
@@ -143,8 +139,8 @@ document.addEventListener("DOMContentLoaded", function () {
       currentPresets[idx].enabled = input.checked;
       var label = input.closest(".toggle").querySelector(".toggle__label");
       label.textContent = input.checked
-        ? (browser.i18n.getMessage("statusActive") || "Active")
-        : (browser.i18n.getMessage("statusDisabled") || "Disabled");
+        ? (t("statusActive") || "Active")
+        : (t("statusDisabled") || "Disabled");
       input.closest(".preset-editor").classList.toggle("preset-editor--disabled", !input.checked);
     } else if (field === "name") {
       currentPresets[idx].name = input.value;
@@ -183,11 +179,34 @@ document.addEventListener("DOMContentLoaded", function () {
     label.textContent = (preset.width || 0) + " × " + (preset.height || 0);
   }
 
+  // Live language switch — apply immediately and persist
+  if (langSelect) {
+    langSelect.addEventListener("change", function () {
+      var pref = langSelect.value || "auto";
+      readSettingsFromForm();
+      currentSettings.uiLanguage = pref;
+      browser.storage.local.set({ settings: currentSettings }).then(function () {
+        return stpI18nInit(pref);
+      }).then(function () {
+        refreshChrome();
+        renderAll();
+        showToast(t("toastSaveSuccess") || "✓ Settings saved!", "success");
+      });
+    });
+  }
+
+  document.querySelectorAll("[data-setting]").forEach(function (el) {
+    if (el.id === "setting-uiLanguage") return; // handled above
+    el.addEventListener("change", function () {
+      readSettingsFromForm();
+    });
+  });
+
   btnAdd.addEventListener("click", function () {
     if (currentPresets.length >= STP.MAX_PRESETS) return;
     currentPresets.push({
       id: stpNewPresetId(),
-      name: browser.i18n.getMessage("newPresetName") || "New preset",
+      name: t("newPresetName") || "New preset",
       width: 1920,
       height: 1080,
       enabled: true,
@@ -203,19 +222,19 @@ document.addEventListener("DOMContentLoaded", function () {
     for (var i = 0; i < currentPresets.length; i++) {
       var p = currentPresets[i];
       if (!String(p.name || "").trim()) {
-        showToast(browser.i18n.getMessage("errEnterName", String(i + 1)) || ("Preset " + (i + 1) + ": enter name"), "info");
+        showToast(t("errEnterName", String(i + 1)) || ("Preset " + (i + 1) + ": enter name"), "info");
         return;
       }
       if (!p.width || p.width < 1) {
-        showToast(browser.i18n.getMessage("errInvalidWidth", String(i + 1)) || ("Preset " + (i + 1) + ": invalid width"), "info");
+        showToast(t("errInvalidWidth", String(i + 1)) || ("Preset " + (i + 1) + ": invalid width"), "info");
         return;
       }
       if (!p.height || p.height < 1) {
-        showToast(browser.i18n.getMessage("errInvalidHeight", String(i + 1)) || ("Preset " + (i + 1) + ": invalid height"), "info");
+        showToast(t("errInvalidHeight", String(i + 1)) || ("Preset " + (i + 1) + ": invalid height"), "info");
         return;
       }
       if (!p.dpi || p.dpi < 1) {
-        showToast(browser.i18n.getMessage("errInvalidDpi", String(i + 1)) || ("Preset " + (i + 1) + ": invalid DPI"), "info");
+        showToast(t("errInvalidDpi", String(i + 1)) || ("Preset " + (i + 1) + ": invalid DPI"), "info");
         return;
       }
       if (!p.id) p.id = stpNewPresetId();
@@ -229,7 +248,10 @@ document.addEventListener("DOMContentLoaded", function () {
       presets: currentPresets,
       settings: currentSettings
     }).then(function () {
-      showToast(browser.i18n.getMessage("toastSaveSuccess") || "✓ Settings saved!", "success");
+      return stpI18nInit(currentSettings.uiLanguage);
+    }).then(function () {
+      refreshChrome();
+      showToast(t("toastSaveSuccess") || "✓ Settings saved!", "success");
     });
   });
 
@@ -237,8 +259,11 @@ document.addEventListener("DOMContentLoaded", function () {
     currentPresets = stpCloneDefaultPresets();
     currentSettings = stpCloneDefaultSettings();
     applySettingsToForm();
-    renderAll();
-    showToast(browser.i18n.getMessage("toastReset") || "↩ Reset to default", "info");
+    stpI18nInit(currentSettings.uiLanguage).then(function () {
+      refreshChrome();
+      renderAll();
+      showToast(t("toastReset") || "↩ Reset to default", "info");
+    });
   });
 
   var toastTimer = null;
@@ -252,28 +277,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 2500);
   }
 
-  function setDocumentLang() {
-    try {
-      var lang = browser.i18n.getUILanguage() || "en";
-      document.documentElement.lang = lang.split("-")[0];
-    } catch (e) { /* ignore */ }
-  }
-
-  function localizePage() {
-    document.querySelectorAll("[data-i18n]").forEach(function (el) {
-      var text = browser.i18n.getMessage(el.dataset.i18n);
-      if (text) el.textContent = text;
-    });
-    document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
-      var text = browser.i18n.getMessage(el.dataset.i18nPlaceholder);
-      if (text) el.placeholder = text;
-    });
-    // options in selects
-    document.querySelectorAll("option[data-i18n]").forEach(function (el) {
-      var text = browser.i18n.getMessage(el.dataset.i18n);
-      if (text) el.textContent = text;
-    });
-    var docTitle = browser.i18n.getMessage("optionsTitle");
-    if (docTitle) document.title = docTitle;
-  }
+  // Boot
+  browser.storage.local.get(["presets", "settings"]).then(function (data) {
+    currentPresets = stpNormalizePresets(data.presets);
+    currentSettings = stpNormalizeSettings(data.settings);
+    return stpI18nInit(currentSettings.uiLanguage);
+  }).then(function () {
+    applySettingsToForm();
+    refreshChrome();
+    renderAll();
+  });
 });

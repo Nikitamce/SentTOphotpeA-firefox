@@ -77,6 +77,15 @@
   "settingsSectionDesc": {
     "message": "Как открывается Photopea и как изображение размещается на холсте."
   },
+  "labelUiLanguage": {
+    "message": "Язык интерфейса"
+  },
+  "optLangAuto": {
+    "message": "Авто (язык браузера)"
+  },
+  "uiLanguageHint": {
+    "message": "Авто берёт язык браузера. Выберите язык, чтобы переопределить его."
+  },
   "labelOpenIn": {
     "message": "Открывать в"
   },

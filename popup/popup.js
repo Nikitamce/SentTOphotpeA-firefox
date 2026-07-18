@@ -1,6 +1,5 @@
 // ============================================================
 // Send to Photopea — Popup Script
-// Clickable presets (blank canvas), recent images, settings
 // ============================================================
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -10,13 +9,21 @@ document.addEventListener("DOMContentLoaded", function () {
   var btnSettings = document.getElementById("btn-settings");
   var btnOpen = document.getElementById("btn-open-photopea");
 
-  setDocumentLang();
-  localizePage();
+  function t(key, subs) {
+    return stpT(key, subs) || "";
+  }
 
-  browser.storage.local.get(["presets", "recent"]).then(function (data) {
-    renderPresets(stpNormalizePresets(data.presets));
-    renderRecent(Array.isArray(data.recent) ? data.recent : []);
-  });
+  function boot() {
+    return browser.storage.local.get(["presets", "recent", "settings"]).then(function (data) {
+      var settings = stpNormalizeSettings(data.settings);
+      return stpI18nInit(settings.uiLanguage).then(function () {
+        stpSetDocumentLangAttr();
+        stpLocalizeRoot(document);
+        renderPresets(stpNormalizePresets(data.presets));
+        renderRecent(Array.isArray(data.recent) ? data.recent : []);
+      });
+    });
+  }
 
   btnSettings.addEventListener("click", function () {
     browser.runtime.openOptionsPage();
@@ -35,8 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (enabled.length === 0) {
       var emptyLi = document.createElement("li");
       emptyLi.className = "presets__empty";
-      emptyLi.textContent = browser.i18n.getMessage("emptyPresets") ||
-        "No active presets. Open settings to add.";
+      emptyLi.textContent = t("emptyPresets") || "No active presets. Open settings to add.";
       listEl.appendChild(emptyLi);
       return;
     }
@@ -51,11 +57,10 @@ document.addEventListener("DOMContentLoaded", function () {
         preset.width + " × " + preset.height + " px · " + (preset.dpi || 72) + " DPI";
 
       var action = li.querySelector(".preset-card__action");
-      var actionText = browser.i18n.getMessage("popupOpenBlank");
+      var actionText = t("popupOpenBlank");
       if (actionText) action.textContent = actionText;
 
-      li.title = browser.i18n.getMessage("popupPresetHint") ||
-        "Open blank canvas of this size in Photopea";
+      li.title = t("popupPresetHint") || "Open a blank canvas of this size in Photopea";
 
       function activate() {
         browser.runtime.sendMessage({
@@ -117,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function shortenUrl(url) {
     if (!url) return "";
-    if (url.indexOf("data:") === 0) return browser.i18n.getMessage("recentDataImage") || "Embedded image";
+    if (url.indexOf("data:") === 0) return t("recentDataImage") || "Embedded image";
     try {
       var u = new URL(url);
       var path = u.pathname.length > 28 ? u.pathname.slice(0, 28) + "…" : u.pathname;
@@ -136,21 +141,5 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function setDocumentLang() {
-    try {
-      var lang = browser.i18n.getUILanguage() || "en";
-      document.documentElement.lang = lang.split("-")[0];
-    } catch (e) { /* ignore */ }
-  }
-
-  function localizePage() {
-    document.querySelectorAll("[data-i18n]").forEach(function (el) {
-      var text = browser.i18n.getMessage(el.dataset.i18n);
-      if (text) el.textContent = text;
-    });
-    document.querySelectorAll("[data-i18n-title]").forEach(function (el) {
-      var text = browser.i18n.getMessage(el.dataset.i18nTitle);
-      if (text) el.title = text;
-    });
-  }
+  boot();
 });
