@@ -2,7 +2,7 @@
 
 Firefox extension: right‑click any image (or video) → open it in [Photopea](https://www.photopea.com), or place it on a custom canvas size (Instagram, Full HD, A4, your own presets).
 
-**Version:** 1.1.1  
+**Version:** 1.1.2  
 **Author:** Nikita  
 **Extension ID:** `send-to-photopea@nikita.dev`
 
@@ -63,6 +63,7 @@ Zip the **contents** of the extension root (so `manifest.json` is at the zip roo
 | `activeTab` / `tabs` | Extract image from the page, open Photopea |
 | `notifications` | Error feedback instead of `alert()` |
 | `<all_urls>` | Download images that block hotlinking (CORS) so Photopea can load them |
+| `webRequest` + `webRequestBlocking` | Read image bytes when CORS hides the body (e.g. addons.mozilla.org); temporary ACAO unlock for those URLs |
 
 No analytics. No data collection (`data_collection_permissions: none`).
 
@@ -84,16 +85,16 @@ Shortcut can be changed: `about:addons` → gear → **Manage Extension Shortcut
 
 ## How image open works
 
-1. Background tries **multiple URL candidates** (`shared/image-fetch.js`) — e.g. AMO `thumbs` → `full` PNG  
-2. On failure, if the page is not a Firefox **restricted domain**, injects `content/extract-image.js`  
-3. **Restricted sites** (including `addons.mozilla.org`) block content scripts — only background fetch is used  
-4. Image is sent to Photopea via **OE API ArrayBuffer** (`content/photopea-bridge.js`), not a fragile URL hash  
-5. Canvas placement runs **after** the file is open (avoids empty canvas of the right size)  
-6. On total failure → try remote `app.open(url)`, then notification + blank canvas for manual paste  
+1. Unlock target image URL via `webRequest` (inject `Access-Control-Allow-Origin` for that URL only)  
+2. Try normal `fetch`; on CORS/`NetworkError` capture body with **`filterResponseData`**  
+3. Multiple URL candidates (AMO `thumbs` → `full` PNG, etc.)  
+4. Restricted sites block **content scripts**; network capture still works  
+5. Image is sent to Photopea as **ArrayBuffer** (OE API)  
+6. Canvas placement runs **after** the file is open  
 
 ### Known limitation
 
-Firefox **forbids** extension content scripts on `addons.mozilla.org`. The extension still downloads preview images by URL from the background. If Mozilla ever blocks that network access too, use “Copy Image” → paste in Photopea.
+Firefox forbids content scripts on `addons.mozilla.org`. v1.1.2 works around missing CORS with `webRequestBlocking`. If you still hit a hard network block, use “Copy Image” → paste in Photopea.
 
 ---
 

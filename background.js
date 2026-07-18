@@ -9,6 +9,11 @@ var lastImageContext = { srcUrl: null, tabId: null, pageUrl: null };
 var pendingJobs = Object.create(null);
 var jobSeq = 0;
 
+// Install CORS unlock + stream-filter helpers ASAP (fixes AMO / no ACAO hosts)
+if (typeof stpInstallWebRequestHelpers === "function") {
+  stpInstallWebRequestHelpers();
+}
+
 // ------ Storage helpers ------
 
 function getPresets() {
@@ -316,6 +321,11 @@ function handleImageAction(menuItemId, imageUrl, tab) {
 
   lastImageContext = { srcUrl: imageUrl, tabId: tabId, pageUrl: pageUrl };
   pushRecent({ srcUrl: imageUrl, pageUrl: pageUrl });
+
+  // Unlock AMO/other no-CORS hosts before any fetch / Photopea open
+  if (typeof stpUnlockRemoteForPhotopea === "function") {
+    stpUnlockRemoteForPhotopea(imageUrl, 120000);
+  }
 
   return getOrFetchDataUrl(imageUrl, tabId, pageUrl)
     .then(function (dataUrl) {
