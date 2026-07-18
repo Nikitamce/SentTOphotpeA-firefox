@@ -373,7 +373,120 @@ function getOrFetchDataUrl(imageUrl, tabId, pageUrl) {
   });
 }
 
-// ------ Open Photopea (hash only — no bridge dependency) ------
+// ------ Open Photopea ------
+
+/**
+ * Run a Photopea OE script in an already-open Photopea tab via postMessage.
+ * Does not depend on a persistent content-script port.
+ */
+function runPhotopeaScriptInTab(tabId, script, timeoutMs) {
+  timeoutMs = timeoutMs || 20000;
+  var injected =
+    "(function(){" +
+    "  var script = " + JSON.stringify(script) + ";" +
+    "  var timeoutMs = " + timeoutMs + ";" +
+    "  return new Promise(function(resolve){" +
+    "    var done = false;" +
+    "    function finish(ok){" +
+    "      if (done) return;" +
+    "      done = true;" +
+    "      try { window.removeEventListener('message', onMsg); } catch (e) {}" +
+    "      resolve(!!ok);" +
+    "    }" +
+    "    function onMsg(e){" +
+    "      if (e.data === 'done') finish(true);" +
+    "    }" +
+    "    window.addEventListener('message', onMsg);" +
+    "    try { window.postMessage(script, '*'); } catch (e) { finish(false); return; }" +
+    "    setTimeout(function(){ finish(true); }, timeoutMs);" +
+    "  });" +
+    "})();";
+
+  return browser.tabs.executeScript(tabId, { code: injected }).then(function (results) {
+    return !!(results && results[0]);
+  });
+}
+
+/**
+ * Wait until Photopea answers OE "done" (booted + ready for scripts).
+ */
+function waitPhotopeaReady(tabId, maxMs) {
+  maxMs = maxMs || 25000;
+  var started = Date.now();
+
+  function attempt() {
+    return runPhotopeaScriptInTab(tabId, 'app.echoToOE("stp");', 2000).then(function (ok) {
+      if (ok) return true;
+      if (Date.now() - started > maxMs) return false;
+      return delay(500).then(attempt);
+    }).catch(function () {
+      if (Date.now() - started > maxMs) return false;
+      return delay(600).then(attempt);
+    });
+  }
+
+  // Let the page start loading first
+  return delay(600).then(attempt);
+}
+
+/**
+ * Canvas flow that actually works:
+ *  1) Open image the same way as "Open" (hash files — proven)
+ *  2) Wait for Photopea ready
+ *  3) Extra delay so the image document finishes opening
+ *  4) postMessage place-on-canvas script
+ */
+function openImageThenPlaceOnCanvas(dataUrl, width, height, options, openIn) {
+  var openUrl = stpBuildOpenUrl(dataUrl);
+  if (openUrl.length > 1.8e6) {
+    notifyError(
+      browser.i18n.getMessage("alertImageTooLargeCanvas") ||
+      "Image too large — opened as-is."
+    );
+    return openTab(stpBuildOpenUrl(dataUrl), openIn);
+  }
+
+  var placeScript = stpBuildCanvasPlaceScript(width, height, options);
+
+  return openTab(openUrl, openIn).then(function (tab) {
+    return waitTabComplete(tab.id, 45000).then(function () {
+      return waitPhotopeaReady(tab.id, 20000);
+    }).then(function (ready) {
+      console.log("STP: Photopea ready =", ready);
+      // Image decode / document create can lag behind first "done"
+      return delay(ready ? 1200 : 2800);
+    }).then(function () {
+      // Nudge: ensure active document exists by no-op script, then place
+      return runPhotopeaScriptInTab(
+        tab.id,
+        "if (app.documents.length < 1) { app.echoToOE('nodoc'); } else { app.echoToOE('hasdoc'); }",
+        5000
+      );
+    }).then(function () {
+      return delay(400);
+    }).then(function () {
+      console.log("STP: running canvas place script");
+      return runPhotopeaScriptInTab(tab.id, placeScript, 25000);
+    }).then(function (ok) {
+      console.log("STP: canvas place done =", ok);
+      if (!ok) {
+        notifyError(
+          browser.i18n.getMessage("alertCanvasPlaceFailed") ||
+          "Image opened, but placing on canvas failed. Try again or paste manually."
+        );
+      }
+      return tab;
+    }).catch(function (err) {
+      console.error("STP: canvas two-step failed", err);
+      // Image should already be open in the tab — better than empty canvas
+      notifyError(
+        browser.i18n.getMessage("alertCanvasPlaceFailed") ||
+        "Could not place on canvas automatically. Image should still be open in Photopea."
+      );
+      return tab;
+    });
+  });
+}
 
 function openInPhotopea(payload) {
   return getSettings().then(function (settings) {
@@ -382,22 +495,18 @@ function openInPhotopea(payload) {
     var dpi = payload.dpi || settings.defaultDpi || 72;
     var openIn = settings.openIn;
     var dataUrl = payload.dataUrl;
+    var opts = { dpi: dpi, fill: fill, fitMode: fitMode };
 
     if (payload.mode === "blank") {
-      return openTab(stpBuildBlankUrl(payload.width, payload.height, {
-        dpi: dpi,
-        fill: fill
-      }), openIn);
+      return openTab(stpBuildBlankUrl(payload.width, payload.height, opts), openIn);
     }
 
     if (!dataUrl) {
       return openTab(STP.PHOTOPEA_ORIGIN, openIn);
     }
 
-    // Guard URI length (leave headroom for browser limits)
-    var MAX = 1500000;
-    if (dataUrl.length > MAX) {
-      console.warn("STP: data URL large (" + dataUrl.length + "), still trying hash open");
+    if (dataUrl.length > 1500000) {
+      console.warn("STP: data URL large (" + dataUrl.length + ")");
     }
 
     if (payload.mode === "open") {
@@ -413,20 +522,14 @@ function openInPhotopea(payload) {
     }
 
     if (payload.mode === "canvas") {
-      var canvasUrl = stpBuildCanvasUrl(dataUrl, payload.width, payload.height, {
-        dpi: dpi,
-        fill: fill,
-        fitMode: fitMode
-      });
-      if (canvasUrl.length > 1.8e6) {
-        // Fall back: open image only (user can resize manually)
-        notifyError(
-          browser.i18n.getMessage("alertImageTooLargeCanvas") ||
-          "Image too large for canvas URL — opened as-is. Use Image Size in Photopea."
-        );
-        return openTab(stpBuildOpenUrl(dataUrl), openIn);
-      }
-      return openTab(canvasUrl, openIn);
+      // Two-step: open image (works) → then place on canvas via OE script
+      return openImageThenPlaceOnCanvas(
+        dataUrl,
+        payload.width,
+        payload.height,
+        opts,
+        openIn
+      );
     }
 
     return openTab(STP.PHOTOPEA_ORIGIN, openIn);

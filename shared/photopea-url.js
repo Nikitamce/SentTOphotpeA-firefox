@@ -71,13 +71,20 @@ function stpBuildOpenUrl(imageUrl) {
   return "https://www.photopea.com#" + encodeURIComponent(JSON.stringify(config));
 }
 
-function stpBuildCanvasUrl(imageUrl, width, height, options) {
+/**
+ * Script that runs AFTER an image document is already open in Photopea.
+ * Copy → new canvas → paste → fit → close source.
+ */
+function stpBuildCanvasPlaceScript(width, height, options) {
   options = options || {};
   var dpi = options.dpi || 72;
   var fitMode = options.fitMode || "center";
   var fillMode = options.fill || "white";
   var docFill = stpFillEnum(fillMode);
-  var script = [
+
+  return [
+    // Guard: need at least one open document (the image)
+    "if (app.documents.length < 1) { throw 'STP: no document open'; }",
     "var src = app.activeDocument;",
     "src.selection.selectAll();",
     "src.activeLayer.copy();",
@@ -86,9 +93,17 @@ function stpBuildCanvasUrl(imageUrl, width, height, options) {
     stpBlackFillScript(fillMode),
     "app.activeDocument.paste();",
     stpBuildScaleScript(fitMode),
-    "src.close(SaveOptions.DONOTSAVECHANGES);"
+    // Close the original image document (not the new canvas)
+    "for (var __i = app.documents.length - 1; __i >= 0; __i--) {",
+    "  var __d = app.documents[__i];",
+    "  if (__d !== app.activeDocument) { try { __d.close(SaveOptions.DONOTSAVECHANGES); } catch (__e) {} }",
+    "}"
   ].filter(Boolean).join("\n");
+}
 
+function stpBuildCanvasUrl(imageUrl, width, height, options) {
+  // Legacy one-shot hash (unreliable race). Prefer two-step open + place script.
+  var script = stpBuildCanvasPlaceScript(width, height, options);
   var config = { files: [imageUrl], script: script };
   return "https://www.photopea.com#" + encodeURIComponent(JSON.stringify(config));
 }

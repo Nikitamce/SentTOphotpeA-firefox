@@ -211,5 +211,8 @@
   },
   "alertImageTooLargeCanvas": {
     "message": "Image too large for canvas URL — opened as-is. Use Image Size in Photopea if needed."
+  },
+  "alertCanvasPlaceFailed": {
+    "message": "Image opened in Photopea, but auto place on canvas failed. You can copy/paste onto a new document."
   }
 }
