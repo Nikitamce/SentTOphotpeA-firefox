@@ -1,20 +1,18 @@
 // ============================================================
-// Send to Photopea — Background Script
-// Context menus, robust image fetch, Photopea bridge (ArrayBuffer)
+// Send to Photopea — Background Script (v1.1.3)
+// Reliable path: get image bytes → open Photopea via URL hash
+// No content-script bridge required for the main flow.
 // ============================================================
 
 // shared: defaults.js, photopea-url.js, image-fetch.js via manifest
 
 var lastImageContext = { srcUrl: null, tabId: null, pageUrl: null };
-var pendingJobs = Object.create(null);
-var jobSeq = 0;
 
-// Install CORS unlock + stream-filter helpers ASAP (fixes AMO / no ACAO hosts)
 if (typeof stpInstallWebRequestHelpers === "function") {
-  stpInstallWebRequestHelpers();
+  try { stpInstallWebRequestHelpers(); } catch (e) { /* ignore */ }
 }
 
-// ------ Storage helpers ------
+// ------ Storage ------
 
 function getPresets() {
   return browser.storage.local.get("presets").then(function (data) {
@@ -43,8 +41,6 @@ function pushRecent(entry) {
   });
 }
 
-// ------ Notifications ------
-
 function notifyError(message) {
   getSettings().then(function (settings) {
     if (!settings.notifyOnError) return;
@@ -61,79 +57,37 @@ function notifyError(message) {
   });
 }
 
-// ------ Restricted pages (no content scripts) ------
-
 function isRestrictedPageUrl(url) {
   if (!url) return false;
   try {
     var host = new URL(url).hostname;
-    var blocked = [
+    return [
       "addons.mozilla.org",
       "addons.cdn.mozilla.org",
       "discovery.addons.mozilla.org",
-      "accounts.firefox.com",
-      "addons.mozilla.net"
-    ];
-    return blocked.some(function (h) {
+      "accounts.firefox.com"
+    ].some(function (h) {
       return host === h || host.endsWith("." + h);
     });
   } catch (e) {
-    return /addons\.mozilla\.org/i.test(url);
+    return /addons\.mozilla\.org/i.test(String(url));
   }
 }
 
-// ------ Image extraction ------
-
-function ensureExtractScript(tabId) {
-  return browser.tabs.executeScript(tabId, { file: "content/extract-image.js" })
-    .catch(function () { /* restricted / already injected */ });
+function delay(ms) {
+  return new Promise(function (r) { setTimeout(r, ms); });
 }
 
-function extractViaContentScript(tabId, imageUrl) {
-  return ensureExtractScript(tabId).then(function () {
-    return browser.tabs.sendMessage(tabId, { type: "stp-extract", url: imageUrl });
-  }).then(function (res) {
-    if (res && res.ok && res.dataUrl) return res.dataUrl;
-    throw new Error("content extract failed");
-  });
-}
-
-/**
- * Prefer background multi-URL fetch (works on AMO where CS is blocked).
- * Fall back to content script only on non-restricted pages.
- */
-function getOrFetchDataUrl(imageUrl, tabId, pageUrl) {
-  if (!imageUrl) return Promise.reject(new Error("no image url"));
-  if (imageUrl.indexOf("data:") === 0) return Promise.resolve(imageUrl);
-
-  var restricted = isRestrictedPageUrl(pageUrl);
-
-  // blob: only readable in page context
-  if (imageUrl.indexOf("blob:") === 0) {
-    if (restricted || tabId == null) {
-      return Promise.reject(new Error("blob URL on restricted page"));
-    }
-    return extractViaContentScript(tabId, imageUrl);
-  }
-
-  return stpFetchImageDataUrl(imageUrl)
-    .catch(function (err) {
-      console.warn("Background multi-fetch failed:", err);
-      if (restricted || tabId == null) throw err;
-      return extractViaContentScript(tabId, imageUrl);
-    });
-}
-
-// ------ Open Photopea via bridge ------
+// ------ Tab helpers ------
 
 function waitTabComplete(tabId, timeoutMs) {
-  timeoutMs = timeoutMs || 45000;
+  timeoutMs = timeoutMs || 30000;
   return new Promise(function (resolve) {
     var done = false;
     function finish() {
       if (done) return;
       done = true;
-      browser.tabs.onUpdated.removeListener(onUpdated);
+      try { browser.tabs.onUpdated.removeListener(onUpdated); } catch (e) { /* ignore */ }
       resolve();
     }
     function onUpdated(id, info) {
@@ -141,7 +95,7 @@ function waitTabComplete(tabId, timeoutMs) {
     }
     browser.tabs.onUpdated.addListener(onUpdated);
     browser.tabs.get(tabId).then(function (tab) {
-      if (tab.status === "complete") finish();
+      if (tab && tab.status === "complete") finish();
     }).catch(function () { /* ignore */ });
     setTimeout(finish, timeoutMs);
   });
@@ -157,109 +111,322 @@ function openTab(url, openIn) {
   return browser.tabs.create({ url: url });
 }
 
-function ensurePhotopeaBridge(tabId) {
-  return browser.tabs.executeScript(tabId, { file: "content/photopea-bridge.js" })
-    .catch(function () { /* content_scripts may already inject */ });
-}
+// ------ Image acquisition ------
 
-function createJob(payload) {
-  var id = "job_" + Date.now() + "_" + (++jobSeq);
-  pendingJobs[id] = {
-    payload: payload,
-    created: Date.now()
-  };
-  // GC old jobs (5 min)
-  Object.keys(pendingJobs).forEach(function (k) {
-    if (Date.now() - pendingJobs[k].created > 300000) delete pendingJobs[k];
-  });
-  return id;
-}
+/**
+ * Open image URL in a small background popup and screenshot it.
+ * Works when CORS blocks fetch (addons.mozilla.org etc.).
+ */
+function fetchViaTabCapture(imageUrl) {
+  var createdTabId = null;
+  var createdWinId = null;
 
-function getJob(jobId) {
-  return pendingJobs[jobId] || null;
-}
-
-function clearJob(jobId) {
-  delete pendingJobs[jobId];
-}
-
-function sendBridgeMessage(tabId, jobId, attempt) {
-  attempt = attempt || 0;
-  return browser.tabs.sendMessage(tabId, {
-    type: "stp-photopea-run",
-    jobId: jobId
-  }).catch(function (err) {
-    if (attempt >= 8) throw err;
-    return new Promise(function (r) { setTimeout(r, 500); }).then(function () {
-      return ensurePhotopeaBridge(tabId).then(function () {
-        return sendBridgeMessage(tabId, jobId, attempt + 1);
+  return browser.windows.create({
+    url: imageUrl,
+    type: "popup",
+    width: 640,
+    height: 640,
+    // Keep it out of the way; still rendered so capture works
+    left: 40,
+    top: 40,
+    focused: false,
+    allowScriptsToClose: true
+  }).then(function (win) {
+    createdWinId = win.id;
+    var tab = win.tabs && win.tabs[0];
+    if (!tab) throw new Error("no tab in capture window");
+    createdTabId = tab.id;
+    return waitTabComplete(tab.id, 20000).then(function () {
+      return delay(400);
+    }).then(function () {
+      // Prefer captureTab (Firefox 82+)
+      if (browser.tabs.captureTab) {
+        return browser.tabs.captureTab(tab.id, { format: "png" });
+      }
+      return browser.tabs.captureVisibleTab(win.id, { format: "png" });
+    }).then(function (dataUrl) {
+      return stpAutoCropDataUrl(dataUrl).catch(function () {
+        return dataUrl;
       });
+    });
+  }).then(function (dataUrl) {
+    return cleanupCapture(createdWinId, createdTabId).then(function () {
+      if (!dataUrl || dataUrl.length < 100) throw new Error("empty capture");
+      return dataUrl;
+    });
+  }).catch(function (err) {
+    return cleanupCapture(createdWinId, createdTabId).then(function () {
+      throw err;
     });
   });
 }
 
-function openViaBridge(payload, openIn) {
-  // Convert dataUrl → ArrayBuffer in background (structured clone supports it)
-  var prepare = Promise.resolve(payload);
-  if (payload.dataUrl && !payload.arrayBuffer) {
-    prepare = stpDataUrlToArrayBuffer(payload.dataUrl).then(function (buf) {
-      var next = Object.assign({}, payload);
-      next.arrayBuffer = buf;
-      // keep dataUrl as fallback for bridge; drop if huge to save clone cost
-      if (next.dataUrl && next.dataUrl.length > 2e6) delete next.dataUrl;
-      return next;
-    }).catch(function () {
-      return payload;
+function cleanupCapture(winId, tabId) {
+  var p = Promise.resolve();
+  if (winId != null) {
+    p = p.then(function () {
+      return browser.windows.remove(winId).catch(function () { /* ignore */ });
+    });
+  } else if (tabId != null) {
+    p = p.then(function () {
+      return browser.tabs.remove(tabId).catch(function () { /* ignore */ });
     });
   }
-
-  return prepare.then(function (finalPayload) {
-    var jobId = createJob(finalPayload);
-    return openTab(STP.PHOTOPEA_ORIGIN, openIn).then(function (tab) {
-      return waitTabComplete(tab.id).then(function () {
-        return ensurePhotopeaBridge(tab.id).then(function () {
-          // Let Photopea boot before first OE message
-          return new Promise(function (r) { setTimeout(r, 900); }).then(function () {
-            return sendBridgeMessage(tab.id, jobId).then(function (res) {
-              if (res && res.ok === false) {
-                console.error("Bridge reported failure:", res.error);
-                notifyError(
-                  browser.i18n.getMessage("alertManualCopy") ||
-                  "Photopea did not accept the image. Try Copy Image → paste in Photopea."
-                );
-              }
-              return res;
-            });
-          });
-        });
-      });
-    });
-  });
+  return p;
 }
 
 /**
- * payload: mode open | canvas | blank ; dataUrl? ; remoteUrl? ; width/height/dpi/fill/fitMode
+ * Crop uniform letterboxing from a tab screenshot (image viewer margins).
  */
+function stpAutoCropDataUrl(dataUrl) {
+  return new Promise(function (resolve, reject) {
+    try {
+      var img = new Image();
+      img.onload = function () {
+        try {
+          var w = img.naturalWidth || img.width;
+          var h = img.naturalHeight || img.height;
+          if (!w || !h) {
+            resolve(dataUrl);
+            return;
+          }
+          var canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          var ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+          var imageData = ctx.getImageData(0, 0, w, h);
+          var d = imageData.data;
+
+          function idx(x, y) {
+            return (y * w + x) * 4;
+          }
+          function same(x, y, r0, g0, b0, tol) {
+            var i = idx(x, y);
+            return (
+              Math.abs(d[i] - r0) <= tol &&
+              Math.abs(d[i + 1] - g0) <= tol &&
+              Math.abs(d[i + 2] - b0) <= tol
+            );
+          }
+
+          // Background color from corners (median-ish average)
+          var corners = [[0, 0], [w - 1, 0], [0, h - 1], [w - 1, h - 1]];
+          var r0 = 0, g0 = 0, b0 = 0;
+          corners.forEach(function (c) {
+            var i = idx(c[0], c[1]);
+            r0 += d[i]; g0 += d[i + 1]; b0 += d[i + 2];
+          });
+          r0 = (r0 / 4) | 0;
+          g0 = (g0 / 4) | 0;
+          b0 = (b0 / 4) | 0;
+          var tol = 18;
+
+          var minX = w, minY = h, maxX = 0, maxY = 0;
+          var step = Math.max(1, Math.floor(Math.min(w, h) / 400));
+          for (var y = 0; y < h; y += step) {
+            for (var x = 0; x < w; x += step) {
+              if (!same(x, y, r0, g0, b0, tol)) {
+                if (x < minX) minX = x;
+                if (y < minY) minY = y;
+                if (x > maxX) maxX = x;
+                if (y > maxY) maxY = y;
+              }
+            }
+          }
+
+          // Expand a bit and clamp
+          minX = Math.max(0, minX - step);
+          minY = Math.max(0, minY - step);
+          maxX = Math.min(w - 1, maxX + step);
+          maxY = Math.min(h - 1, maxY + step);
+
+          var cw = maxX - minX + 1;
+          var ch = maxY - minY + 1;
+          // If crop failed / almost full frame, keep original
+          if (cw < 4 || ch < 4 || (cw * ch) > (w * h * 0.98)) {
+            resolve(dataUrl);
+            return;
+          }
+
+          var out = document.createElement("canvas");
+          out.width = cw;
+          out.height = ch;
+          out.getContext("2d").drawImage(canvas, minX, minY, cw, ch, 0, 0, cw, ch);
+          resolve(out.toDataURL("image/png"));
+        } catch (e) {
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = function () { reject(new Error("crop image load failed")); };
+      img.src = dataUrl;
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+function extractViaContentScript(tabId, imageUrl) {
+  return browser.tabs.executeScript(tabId, { file: "content/extract-image.js" })
+    .catch(function () { /* ignore */ })
+    .then(function () {
+      return browser.tabs.sendMessage(tabId, { type: "stp-extract", url: imageUrl });
+    })
+    .then(function (res) {
+      if (res && res.ok && res.dataUrl) return res.dataUrl;
+      throw new Error("content extract failed");
+    });
+}
+
+function isAmoAssetUrl(url) {
+  try {
+    var h = new URL(url).hostname;
+    return h === "addons.mozilla.org" || h.endsWith(".addons.mozilla.org") ||
+      h === "addons.cdn.mozilla.net" || h.indexOf("addons.cdn.mozilla") !== -1;
+  } catch (e) {
+    return /addons\.mozilla\./i.test(String(url));
+  }
+}
+
+/**
+ * Get a data URL for the image.
+ * AMO / no-CORS hosts: tab capture first (fetch is blocked by CORS).
+ * Other hosts: fetch first, then capture, then content script.
+ */
+function getOrFetchDataUrl(imageUrl, tabId, pageUrl) {
+  if (!imageUrl) return Promise.reject(new Error("no image url"));
+  if (imageUrl.indexOf("data:") === 0) return Promise.resolve(imageUrl);
+
+  if (imageUrl.indexOf("blob:") === 0) {
+    if (tabId == null || isRestrictedPageUrl(pageUrl)) {
+      return Promise.reject(new Error("blob URL not readable"));
+    }
+    return extractViaContentScript(tabId, imageUrl);
+  }
+
+  var errors = [];
+  var preferCapture = isAmoAssetUrl(imageUrl) || isRestrictedPageUrl(pageUrl);
+
+  function tryFetch() {
+    if (typeof stpFetchImageDataUrl !== "function") {
+      return Promise.reject(new Error("fetch helper missing"));
+    }
+    return stpFetchImageDataUrl(imageUrl);
+  }
+
+  function tryCapture() {
+    var candidates = typeof stpImageUrlCandidates === "function"
+      ? stpImageUrlCandidates(imageUrl)
+      : [imageUrl];
+    // For capture, original URL first (already displayed by browser once)
+    var i = 0;
+    function next() {
+      if (i >= candidates.length) {
+        return Promise.reject(new Error("tab capture failed all candidates"));
+      }
+      var url = candidates[i++];
+      console.log("STP: tab-capture try", url);
+      return fetchViaTabCapture(url).catch(function (err) {
+        errors.push("capture:" + (err && err.message ? err.message : err));
+        return next();
+      });
+    }
+    return next();
+  }
+
+  function tryContent() {
+    if (tabId == null || isRestrictedPageUrl(pageUrl)) {
+      return Promise.reject(new Error("content script unavailable"));
+    }
+    return extractViaContentScript(tabId, imageUrl);
+  }
+
+  var chain;
+  if (preferCapture) {
+    // Skip noisy CORS fetch on AMO — go straight to screenshot
+    chain = tryCapture()
+      .catch(function (err) {
+        console.warn("STP capture failed, trying fetch…", err);
+        return tryFetch();
+      })
+      .catch(function (err) {
+        errors.push("fetch:" + (err && err.message ? err.message : err));
+        return tryContent();
+      });
+  } else {
+    chain = tryFetch()
+      .catch(function (err) {
+        errors.push("fetch:" + (err && err.message ? err.message : err));
+        console.warn("STP fetch failed, trying tab capture…", err);
+        return tryCapture();
+      })
+      .catch(function (err) {
+        errors.push(String(err && err.message ? err.message : err));
+        console.warn("STP capture failed, trying content script…", err);
+        return tryContent();
+      });
+  }
+
+  return chain.catch(function (err) {
+    errors.push("final:" + (err && err.message ? err.message : err));
+    throw new Error("All image methods failed: " + errors.join(" | "));
+  });
+}
+
+// ------ Open Photopea (hash only — no bridge dependency) ------
+
 function openInPhotopea(payload) {
   return getSettings().then(function (settings) {
     var fill = payload.fill || settings.canvasFill;
     var fitMode = payload.fitMode || settings.fitMode;
-    var dpi = payload.dpi || settings.defaultDpi;
+    var dpi = payload.dpi || settings.defaultDpi || 72;
     var openIn = settings.openIn;
-    var merged = Object.assign({}, payload, { fill: fill, fitMode: fitMode, dpi: dpi });
+    var dataUrl = payload.dataUrl;
 
-    // Blank canvas: hash is fine (no image race)
-    if (merged.mode === "blank") {
-      var blankUrl = stpBuildBlankUrl(merged.width, merged.height, {
+    if (payload.mode === "blank") {
+      return openTab(stpBuildBlankUrl(payload.width, payload.height, {
         dpi: dpi,
         fill: fill
-      });
-      return openTab(blankUrl, openIn);
+      }), openIn);
     }
 
-    // open + canvas: ALWAYS use bridge (hash script races → empty canvas)
-    if (merged.dataUrl || merged.arrayBuffer || merged.remoteUrl) {
-      return openViaBridge(merged, openIn);
+    if (!dataUrl) {
+      return openTab(STP.PHOTOPEA_ORIGIN, openIn);
+    }
+
+    // Guard URI length (leave headroom for browser limits)
+    var MAX = 1500000;
+    if (dataUrl.length > MAX) {
+      console.warn("STP: data URL large (" + dataUrl.length + "), still trying hash open");
+    }
+
+    if (payload.mode === "open") {
+      var openUrl = stpBuildOpenUrl(dataUrl);
+      if (openUrl.length > 1.8e6) {
+        notifyError(
+          browser.i18n.getMessage("alertManualCopy") ||
+          "Image is too large for the URL method. Copy Image → paste in Photopea."
+        );
+        return openTab(STP.PHOTOPEA_ORIGIN, openIn);
+      }
+      return openTab(openUrl, openIn);
+    }
+
+    if (payload.mode === "canvas") {
+      var canvasUrl = stpBuildCanvasUrl(dataUrl, payload.width, payload.height, {
+        dpi: dpi,
+        fill: fill,
+        fitMode: fitMode
+      });
+      if (canvasUrl.length > 1.8e6) {
+        // Fall back: open image only (user can resize manually)
+        notifyError(
+          browser.i18n.getMessage("alertImageTooLargeCanvas") ||
+          "Image too large for canvas URL — opened as-is. Use Image Size in Photopea."
+        );
+        return openTab(stpBuildOpenUrl(dataUrl), openIn);
+      }
+      return openTab(canvasUrl, openIn);
     }
 
     return openTab(STP.PHOTOPEA_ORIGIN, openIn);
@@ -311,10 +478,6 @@ function createContextMenus() {
   });
 }
 
-function resolveImageUrl(info) {
-  return info.srcUrl || null;
-}
-
 function handleImageAction(menuItemId, imageUrl, tab) {
   var tabId = tab && tab.id;
   var pageUrl = tab && tab.url;
@@ -322,19 +485,16 @@ function handleImageAction(menuItemId, imageUrl, tab) {
   lastImageContext = { srcUrl: imageUrl, tabId: tabId, pageUrl: pageUrl };
   pushRecent({ srcUrl: imageUrl, pageUrl: pageUrl });
 
-  // Unlock AMO/other no-CORS hosts before any fetch / Photopea open
   if (typeof stpUnlockRemoteForPhotopea === "function") {
-    stpUnlockRemoteForPhotopea(imageUrl, 120000);
+    try { stpUnlockRemoteForPhotopea(imageUrl, 120000); } catch (e) { /* ignore */ }
   }
 
   return getOrFetchDataUrl(imageUrl, tabId, pageUrl)
     .then(function (dataUrl) {
+      console.log("STP: got data URL, length=", dataUrl.length);
+
       if (menuItemId === "photopea-open" || menuItemId === "command-open") {
-        return openInPhotopea({
-          mode: "open",
-          dataUrl: dataUrl,
-          remoteUrl: imageUrl
-        });
+        return openInPhotopea({ mode: "open", dataUrl: dataUrl });
       }
 
       if (String(menuItemId).indexOf("photopea-preset-") === 0) {
@@ -345,7 +505,6 @@ function handleImageAction(menuItemId, imageUrl, tab) {
           return openInPhotopea({
             mode: "canvas",
             dataUrl: dataUrl,
-            remoteUrl: imageUrl,
             width: preset.width,
             height: preset.height,
             dpi: preset.dpi
@@ -355,46 +514,25 @@ function handleImageAction(menuItemId, imageUrl, tab) {
     })
     .catch(function (err) {
       console.error("Image action failed:", err);
+      notifyError(
+        browser.i18n.getMessage("alertManualCopy") ||
+        "Could not extract the image. Copy Image → paste into Photopea (Ctrl+V)."
+      );
 
-      // Last resort: open Photopea and let it try the remote URL via OE API
-      // (works when PP can fetch the file even if we couldn't re-encode it)
-      var remoteCandidates = typeof stpImageUrlCandidates === "function"
-        ? stpImageUrlCandidates(imageUrl)
-        : [imageUrl];
-
-      var tryRemote = function (mode, extra) {
-        return openInPhotopea(Object.assign({
-          mode: mode,
-          remoteUrl: remoteCandidates[0] || imageUrl
-        }, extra || {}));
-      };
-
+      // Soft fallback: blank Photopea / blank canvas only (no bridge messaging)
       if (menuItemId === "photopea-open" || menuItemId === "command-open") {
-        return tryRemote("open").catch(function () {
-          notifyError(browser.i18n.getMessage("alertManualCopy") ||
-            "Could not extract the image. Copy it manually and paste into Photopea (Ctrl+V).");
-          return openTab(STP.PHOTOPEA_ORIGIN, "newTab");
-        });
+        return openTab(STP.PHOTOPEA_ORIGIN, "newTab");
       }
-
       if (String(menuItemId).indexOf("photopea-preset-") === 0) {
         var pid = String(menuItemId).replace("photopea-preset-", "");
         return getPresets().then(function (presets) {
           var preset = presets.find(function (p) { return p.id === pid; });
-          if (!preset) return;
-          return tryRemote("canvas", {
+          if (!preset) return openTab(STP.PHOTOPEA_ORIGIN, "newTab");
+          return openInPhotopea({
+            mode: "blank",
             width: preset.width,
             height: preset.height,
             dpi: preset.dpi
-          }).catch(function () {
-            notifyError(browser.i18n.getMessage("alertManualCopy") ||
-              "Could not extract the image. Canvas opened empty — paste with Ctrl+V.");
-            return openInPhotopea({
-              mode: "blank",
-              width: preset.width,
-              height: preset.height,
-              dpi: preset.dpi
-            });
           });
         });
       }
@@ -404,7 +542,7 @@ function handleImageAction(menuItemId, imageUrl, tab) {
 // ------ Events ------
 
 browser.contextMenus.onClicked.addListener(function (info, tab) {
-  var imageUrl = resolveImageUrl(info);
+  var imageUrl = info.srcUrl || null;
   if (!imageUrl) {
     notifyError(browser.i18n.getMessage("notifyNoImage") || "No image URL on this item.");
     return;
@@ -445,17 +583,14 @@ browser.storage.onChanged.addListener(function (changes, area) {
 
 browser.commands.onCommand.addListener(function (command) {
   if (command !== "open-in-photopea") return;
-
   var src = lastImageContext.srcUrl;
   var tabId = lastImageContext.tabId;
-
   if (!src) {
     notifyError(browser.i18n.getMessage("notifyNoImage") ||
       "No image yet. Right‑click an image first, then use the shortcut.");
     openTab(STP.PHOTOPEA_ORIGIN, "newTab");
     return;
   }
-
   browser.tabs.get(tabId).then(function (tab) {
     handleImageAction("command-open", src, tab);
   }).catch(function () {
@@ -465,15 +600,6 @@ browser.commands.onCommand.addListener(function (command) {
 
 browser.runtime.onMessage.addListener(function (msg) {
   if (!msg || !msg.type) return;
-
-  if (msg.type === "stp-get-job") {
-    return Promise.resolve(getJob(msg.jobId));
-  }
-
-  if (msg.type === "stp-clear-job") {
-    clearJob(msg.jobId);
-    return Promise.resolve({ ok: true });
-  }
 
   if (msg.type === "stp-open-blank-preset") {
     return openInPhotopea({
@@ -485,9 +611,8 @@ browser.runtime.onMessage.addListener(function (msg) {
   }
 
   if (msg.type === "stp-open-recent") {
-    var tabId = lastImageContext.tabId;
     return browser.tabs.query({ active: true, currentWindow: true }).then(function (tabs) {
-      var tab = tabs[0] || { id: tabId, url: lastImageContext.pageUrl };
+      var tab = tabs[0] || { id: lastImageContext.tabId, url: lastImageContext.pageUrl };
       return handleImageAction("photopea-open", msg.srcUrl, tab);
     });
   }

@@ -208,5 +208,8 @@
   },
   "commandOpenDescription": {
     "message": "Open the last image in Photopea"
+  },
+  "alertImageTooLargeCanvas": {
+    "message": "Image too large for canvas URL — opened as-is. Use Image Size in Photopea if needed."
   }
 }

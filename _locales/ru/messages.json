@@ -208,5 +208,8 @@
   },
   "commandOpenDescription": {
     "message": "Открыть последнее изображение в Photopea"
+  },
+  "alertImageTooLargeCanvas": {
+    "message": "Картинка слишком большая для URL холста — открыта как есть. При необходимости измените размер в Photopea."
   }
 }

@@ -2,7 +2,7 @@
 
 Firefox extension: right‑click any image (or video) → open it in [Photopea](https://www.photopea.com), or place it on a custom canvas size (Instagram, Full HD, A4, your own presets).
 
-**Version:** 1.1.2  
+**Version:** 1.1.3  
 **Author:** Nikita  
 **Extension ID:** `send-to-photopea@nikita.dev`
 
@@ -85,16 +85,14 @@ Shortcut can be changed: `about:addons` → gear → **Manage Extension Shortcut
 
 ## How image open works
 
-1. Unlock target image URL via `webRequest` (inject `Access-Control-Allow-Origin` for that URL only)  
-2. Try normal `fetch`; on CORS/`NetworkError` capture body with **`filterResponseData`**  
-3. Multiple URL candidates (AMO `thumbs` → `full` PNG, etc.)  
-4. Restricted sites block **content scripts**; network capture still works  
-5. Image is sent to Photopea as **ArrayBuffer** (OE API)  
-6. Canvas placement runs **after** the file is open  
+1. Try `fetch` / stream filter (with optional CORS unlock)  
+2. On CORS failure (typical for `addons.mozilla.org`): open image in a small popup → **`tabs.captureTab`** → auto-crop margins  
+3. Open Photopea via **URL hash** with embedded data URL (no content-script bridge required)  
+4. Canvas presets use hash `files` + `script`  
 
 ### Known limitation
 
-Firefox forbids content scripts on `addons.mozilla.org`. v1.1.2 works around missing CORS with `webRequestBlocking`. If you still hit a hard network block, use “Copy Image” → paste in Photopea.
+`addons.mozilla.org` blocks extension content scripts and often CORS-hides image bodies. Tab-capture bypasses that. If capture is blocked by policy, use “Copy Image” → paste in Photopea.
 
 ---
 
