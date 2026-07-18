@@ -1,37 +1,14 @@
 // ============================================================
-// Photopea page bridge — open large images / run canvas scripts
-// without stuffing multi‑MB data URLs into the location hash.
+// Photopea bridge — open images via ArrayBuffer (OE API),
+// then optionally place onto a canvas. Reliable for AMO etc.
 // ============================================================
 
 (function () {
-  if (window.__stpPhotopeaBridge) return;
-  window.__stpPhotopeaBridge = true;
+  if (window.__stpPhotopeaBridgeV2) return;
+  window.__stpPhotopeaBridgeV2 = true;
 
-  function waitForPhotopeaReady(timeoutMs) {
-    timeoutMs = timeoutMs || 20000;
-    return new Promise(function (resolve) {
-      var done = false;
-      function finish() {
-        if (done) return;
-        done = true;
-        window.removeEventListener("message", onMessage);
-        resolve();
-      }
-      function onMessage(e) {
-        if (e.source !== window) return;
-        if (e.data === "done") finish();
-      }
-      window.addEventListener("message", onMessage);
-      // Nudge / probe — Photopea answers with "done" when ready for OE API
-      try {
-        window.postMessage("app.echoToOE(\"stp\");", "*");
-      } catch (e) { /* ignore */ }
-      setTimeout(finish, timeoutMs);
-    });
-  }
-
-  function runScript(script, timeoutMs) {
-    timeoutMs = timeoutMs || 60000;
+  function waitForDone(timeoutMs) {
+    timeoutMs = timeoutMs || 45000;
     return new Promise(function (resolve) {
       var finished = false;
       function finish() {
@@ -41,19 +18,67 @@
         resolve();
       }
       function onMessage(e) {
-        if (e.source !== window) return;
+        // Photopea posts "done" to the same window for OE API
         if (e.data === "done") finish();
       }
       window.addEventListener("message", onMessage);
-      window.postMessage(script, "*");
       setTimeout(finish, timeoutMs);
     });
   }
 
-  function dataUrlToObjectUrl(dataUrl) {
-    return fetch(dataUrl)
-      .then(function (r) { return r.blob(); })
-      .then(function (blob) { return URL.createObjectURL(blob); });
+  function runScript(script, timeoutMs) {
+    var p = waitForDone(timeoutMs || 60000);
+    try {
+      window.postMessage(script, "*");
+    } catch (e) {
+      console.warn("STP postMessage script failed", e);
+    }
+    return p;
+  }
+
+  function sendArrayBuffer(buffer, timeoutMs) {
+    var p = waitForDone(timeoutMs || 60000);
+    try {
+      window.postMessage(buffer, "*");
+    } catch (e) {
+      console.warn("STP postMessage ArrayBuffer failed", e);
+    }
+    return p;
+  }
+
+  function waitUntilPhotopeaAlive(maxMs) {
+    maxMs = maxMs || 25000;
+    var started = Date.now();
+
+    function attempt() {
+      return new Promise(function (resolve) {
+        var settled = false;
+        function onMessage(e) {
+          if (e.data === "done") {
+            if (settled) return;
+            settled = true;
+            window.removeEventListener("message", onMessage);
+            resolve(true);
+          }
+        }
+        window.addEventListener("message", onMessage);
+        try {
+          window.postMessage('app.echoToOE("stp-ping");', "*");
+        } catch (e) { /* ignore */ }
+        setTimeout(function () {
+          if (settled) return;
+          settled = true;
+          window.removeEventListener("message", onMessage);
+          resolve(false);
+        }, 900);
+      }).then(function (ok) {
+        if (ok) return true;
+        if (Date.now() - started > maxMs) return false;
+        return new Promise(function (r) { setTimeout(r, 400); }).then(attempt);
+      });
+    }
+
+    return attempt();
   }
 
   function fillEnum(fill) {
@@ -85,7 +110,6 @@
         "layer.translate(dx, dy);"
       ].join("\n");
     }
-
     if (fitMode === "stretch") {
       return [
         "var doc = app.activeDocument;",
@@ -100,8 +124,6 @@
         "layer.translate(-b[0].value, -b[1].value);"
       ].join("\n");
     }
-
-    // fit | fill
     var useMax = fitMode === "fill";
     return [
       "var doc = app.activeDocument;",
@@ -122,7 +144,45 @@
     ].join("\n");
   }
 
-  function handlePayload(payload) {
+  function dataUrlToArrayBuffer(dataUrl) {
+    var comma = dataUrl.indexOf(",");
+    if (comma === -1) return Promise.reject(new Error("bad data URL"));
+    var meta = dataUrl.slice(0, comma);
+    var data = dataUrl.slice(comma + 1);
+    if (meta.indexOf(";base64") !== -1) {
+      var binary = atob(data);
+      var len = binary.length;
+      var bytes = new Uint8Array(len);
+      for (var i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+      return Promise.resolve(bytes.buffer);
+    }
+    var decoded = decodeURIComponent(data);
+    var out = new Uint8Array(decoded.length);
+    for (var j = 0; j < decoded.length; j++) out[j] = decoded.charCodeAt(j);
+    return Promise.resolve(out.buffer);
+  }
+
+  function openImageFromPayload(payload) {
+    // Prefer ArrayBuffer (official OE API). Fallback: app.open(dataUrl / remote).
+    if (payload.arrayBuffer) {
+      return sendArrayBuffer(payload.arrayBuffer);
+    }
+    if (payload.dataUrl) {
+      return dataUrlToArrayBuffer(payload.dataUrl).then(function (buf) {
+        return sendArrayBuffer(buf);
+      }).catch(function () {
+        var safe = String(payload.dataUrl).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+        return runScript('app.open("' + safe + '", null, true);');
+      });
+    }
+    if (payload.remoteUrl) {
+      var r = String(payload.remoteUrl).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+      return runScript('app.open("' + r + '", null, true);');
+    }
+    return Promise.reject(new Error("no image payload"));
+  }
+
+  function placeOnCanvas(payload) {
     var dpi = payload.dpi || 72;
     var fillMode = payload.fill || "white";
     var fill = fillEnum(fillMode);
@@ -130,7 +190,35 @@
     var width = payload.width || 1920;
     var height = payload.height || 1080;
 
-    return waitForPhotopeaReady(15000).then(function () {
+    var canvasScript = [
+      "var src = app.activeDocument;",
+      "src.selection.selectAll();",
+      "src.activeLayer.copy();",
+      "app.documents.add(" + width + ", " + height + ", " + dpi +
+        ", \"Canvas\", NewDocumentMode.RGB, " + fill + ");",
+      blackFillScript(fillMode),
+      "app.activeDocument.paste();",
+      buildScaleScript(fitMode),
+      "src.close(SaveOptions.DONOTSAVECHANGES);"
+    ].filter(Boolean).join("\n");
+
+    return runScript(canvasScript);
+  }
+
+  function handlePayload(payload) {
+    payload = payload || {};
+    var dpi = payload.dpi || 72;
+    var fillMode = payload.fill || "white";
+    var fill = fillEnum(fillMode);
+    var width = payload.width || 1920;
+    var height = payload.height || 1080;
+
+    return waitUntilPhotopeaAlive(25000).then(function (alive) {
+      if (!alive) {
+        // still try — Photopea may accept messages without echo
+        console.warn("STP: Photopea echo not confirmed, continuing");
+      }
+
       if (payload.mode === "blank") {
         var blank = [
           "app.documents.add(" + width + ", " + height + ", " + dpi +
@@ -140,51 +228,46 @@
         return runScript(blank);
       }
 
-      if (!payload.dataUrl) {
-        return Promise.resolve();
-      }
-
-      return dataUrlToObjectUrl(payload.dataUrl).then(function (objUrl) {
-        // Escape for embedding in JS string
-        var safeUrl = String(objUrl).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-
-        if (payload.mode === "open") {
-          return runScript('app.open("' + safeUrl + '", null, true);').then(function () {
-            try { URL.revokeObjectURL(objUrl); } catch (e) { /* ignore */ }
-          });
+      return openImageFromPayload(payload).then(function () {
+        // small pause so activeDocument is the opened image
+        return new Promise(function (r) { setTimeout(r, 250); });
+      }).then(function () {
+        if (payload.mode === "canvas") {
+          return placeOnCanvas(payload);
         }
-
-        // canvas: open image → copy → new doc → paste → scale → close source
-        var script = [
-          'app.open("' + safeUrl + '", null, true);'
-        ].join("\n");
-
-        return runScript(script).then(function () {
-          var canvasScript = [
-            "var src = app.activeDocument;",
-            "src.selection.selectAll();",
-            "src.activeLayer.copy();",
-            "app.documents.add(" + width + ", " + height + ", " + dpi +
-              ", \"Canvas\", NewDocumentMode.RGB, " + fill + ");",
-            blackFillScript(fillMode),
-            "app.activeDocument.paste();",
-            buildScaleScript(fitMode),
-            "src.close(SaveOptions.DONOTSAVECHANGES);"
-          ].filter(Boolean).join("\n");
-          return runScript(canvasScript);
-        }).then(function () {
-          try { URL.revokeObjectURL(objUrl); } catch (e) { /* ignore */ }
-        });
       });
     });
   }
 
+  function loadJobAndRun(jobId) {
+    return browser.runtime.sendMessage({ type: "stp-get-job", jobId: jobId })
+      .then(function (job) {
+        if (!job || !job.payload) throw new Error("job missing");
+        return handlePayload(job.payload).then(function (result) {
+          browser.runtime.sendMessage({ type: "stp-clear-job", jobId: jobId }).catch(function () {});
+          return result;
+        });
+      });
+  }
+
   browser.runtime.onMessage.addListener(function (msg) {
-    if (!msg || msg.type !== "stp-photopea-run") return;
-    return handlePayload(msg.payload || {}).then(function () {
-      return { ok: true };
-    }).catch(function (err) {
-      return { ok: false, error: String(err && err.message ? err.message : err) };
-    });
+    if (!msg || !msg.type) return;
+
+    if (msg.type === "stp-photopea-run") {
+      // Prefer jobId (large images stay in background memory)
+      if (msg.jobId) {
+        return loadJobAndRun(msg.jobId).then(function () {
+          return { ok: true };
+        }).catch(function (err) {
+          console.error("STP bridge job failed", err);
+          return { ok: false, error: String(err && err.message ? err.message : err) };
+        });
+      }
+      return handlePayload(msg.payload || {}).then(function () {
+        return { ok: true };
+      }).catch(function (err) {
+        return { ok: false, error: String(err && err.message ? err.message : err) };
+      });
+    }
   });
 })();

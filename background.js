@@ -1,11 +1,13 @@
 // ============================================================
 // Send to Photopea — Background Script
-// Context menus, image extraction, Photopea open (hash / bridge)
+// Context menus, robust image fetch, Photopea bridge (ArrayBuffer)
 // ============================================================
 
-// shared/defaults.js + shared/photopea-url.js loaded via manifest background.scripts
+// shared: defaults.js, photopea-url.js, image-fetch.js via manifest
 
 var lastImageContext = { srcUrl: null, tabId: null, pageUrl: null };
+var pendingJobs = Object.create(null);
+var jobSeq = 0;
 
 // ------ Storage helpers ------
 
@@ -36,7 +38,7 @@ function pushRecent(entry) {
   });
 }
 
-// ------ Notifications / errors ------
+// ------ Notifications ------
 
 function notifyError(message) {
   getSettings().then(function (settings) {
@@ -54,27 +56,32 @@ function notifyError(message) {
   });
 }
 
-// ------ Image extraction ------
+// ------ Restricted pages (no content scripts) ------
 
-function fetchDataUrlInBackground(imageUrl) {
-  return fetch(imageUrl)
-    .then(function (response) {
-      if (!response.ok) throw new Error("Fetch failed: " + response.status);
-      return response.blob();
-    })
-    .then(function (blob) {
-      return new Promise(function (resolve, reject) {
-        var reader = new FileReader();
-        reader.onloadend = function () { resolve(reader.result); };
-        reader.onerror = function () { reject(reader.error); };
-        reader.readAsDataURL(blob);
-      });
+function isRestrictedPageUrl(url) {
+  if (!url) return false;
+  try {
+    var host = new URL(url).hostname;
+    var blocked = [
+      "addons.mozilla.org",
+      "addons.cdn.mozilla.org",
+      "discovery.addons.mozilla.org",
+      "accounts.firefox.com",
+      "addons.mozilla.net"
+    ];
+    return blocked.some(function (h) {
+      return host === h || host.endsWith("." + h);
     });
+  } catch (e) {
+    return /addons\.mozilla\.org/i.test(url);
+  }
 }
+
+// ------ Image extraction ------
 
 function ensureExtractScript(tabId) {
   return browser.tabs.executeScript(tabId, { file: "content/extract-image.js" })
-    .catch(function () { /* already injected or restricted page */ });
+    .catch(function () { /* restricted / already injected */ });
 }
 
 function extractViaContentScript(tabId, imageUrl) {
@@ -86,41 +93,52 @@ function extractViaContentScript(tabId, imageUrl) {
   });
 }
 
-function getOrFetchDataUrl(imageUrl, tabId) {
+/**
+ * Prefer background multi-URL fetch (works on AMO where CS is blocked).
+ * Fall back to content script only on non-restricted pages.
+ */
+function getOrFetchDataUrl(imageUrl, tabId, pageUrl) {
   if (!imageUrl) return Promise.reject(new Error("no image url"));
-  if (imageUrl.indexOf("data:") === 0 || imageUrl.indexOf("blob:") === 0) {
-    return Promise.resolve(imageUrl);
+  if (imageUrl.indexOf("data:") === 0) return Promise.resolve(imageUrl);
+
+  var restricted = isRestrictedPageUrl(pageUrl);
+
+  // blob: only readable in page context
+  if (imageUrl.indexOf("blob:") === 0) {
+    if (restricted || tabId == null) {
+      return Promise.reject(new Error("blob URL on restricted page"));
+    }
+    return extractViaContentScript(tabId, imageUrl);
   }
 
-  return fetchDataUrlInBackground(imageUrl)
+  return stpFetchImageDataUrl(imageUrl)
     .catch(function (err) {
-      console.warn("Background fetch failed:", err);
-      if (tabId == null) throw err;
+      console.warn("Background multi-fetch failed:", err);
+      if (restricted || tabId == null) throw err;
       return extractViaContentScript(tabId, imageUrl);
     });
 }
 
-// ------ Open Photopea ------
+// ------ Open Photopea via bridge ------
 
 function waitTabComplete(tabId, timeoutMs) {
-  timeoutMs = timeoutMs || 30000;
-  return new Promise(function (resolve, reject) {
+  timeoutMs = timeoutMs || 45000;
+  return new Promise(function (resolve) {
     var done = false;
-    function finish(ok, val) {
+    function finish() {
       if (done) return;
       done = true;
       browser.tabs.onUpdated.removeListener(onUpdated);
-      if (ok) resolve(val);
-      else reject(val || new Error("tab timeout"));
+      resolve();
     }
     function onUpdated(id, info) {
-      if (id === tabId && info.status === "complete") finish(true);
+      if (id === tabId && info.status === "complete") finish();
     }
     browser.tabs.onUpdated.addListener(onUpdated);
     browser.tabs.get(tabId).then(function (tab) {
-      if (tab.status === "complete") finish(true);
+      if (tab.status === "complete") finish();
     }).catch(function () { /* ignore */ });
-    setTimeout(function () { finish(true); }, timeoutMs);
+    setTimeout(finish, timeoutMs);
   });
 }
 
@@ -136,18 +154,77 @@ function openTab(url, openIn) {
 
 function ensurePhotopeaBridge(tabId) {
   return browser.tabs.executeScript(tabId, { file: "content/photopea-bridge.js" })
-    .catch(function () { /* may already be registered via content_scripts */ });
+    .catch(function () { /* content_scripts may already inject */ });
+}
+
+function createJob(payload) {
+  var id = "job_" + Date.now() + "_" + (++jobSeq);
+  pendingJobs[id] = {
+    payload: payload,
+    created: Date.now()
+  };
+  // GC old jobs (5 min)
+  Object.keys(pendingJobs).forEach(function (k) {
+    if (Date.now() - pendingJobs[k].created > 300000) delete pendingJobs[k];
+  });
+  return id;
+}
+
+function getJob(jobId) {
+  return pendingJobs[jobId] || null;
+}
+
+function clearJob(jobId) {
+  delete pendingJobs[jobId];
+}
+
+function sendBridgeMessage(tabId, jobId, attempt) {
+  attempt = attempt || 0;
+  return browser.tabs.sendMessage(tabId, {
+    type: "stp-photopea-run",
+    jobId: jobId
+  }).catch(function (err) {
+    if (attempt >= 8) throw err;
+    return new Promise(function (r) { setTimeout(r, 500); }).then(function () {
+      return ensurePhotopeaBridge(tabId).then(function () {
+        return sendBridgeMessage(tabId, jobId, attempt + 1);
+      });
+    });
+  });
 }
 
 function openViaBridge(payload, openIn) {
-  return openTab(STP.PHOTOPEA_ORIGIN, openIn).then(function (tab) {
-    return waitTabComplete(tab.id).then(function () {
-      return ensurePhotopeaBridge(tab.id).then(function () {
-        // small delay so Photopea JS boots
-        return new Promise(function (r) { setTimeout(r, 600); }).then(function () {
-          return browser.tabs.sendMessage(tab.id, {
-            type: "stp-photopea-run",
-            payload: payload
+  // Convert dataUrl → ArrayBuffer in background (structured clone supports it)
+  var prepare = Promise.resolve(payload);
+  if (payload.dataUrl && !payload.arrayBuffer) {
+    prepare = stpDataUrlToArrayBuffer(payload.dataUrl).then(function (buf) {
+      var next = Object.assign({}, payload);
+      next.arrayBuffer = buf;
+      // keep dataUrl as fallback for bridge; drop if huge to save clone cost
+      if (next.dataUrl && next.dataUrl.length > 2e6) delete next.dataUrl;
+      return next;
+    }).catch(function () {
+      return payload;
+    });
+  }
+
+  return prepare.then(function (finalPayload) {
+    var jobId = createJob(finalPayload);
+    return openTab(STP.PHOTOPEA_ORIGIN, openIn).then(function (tab) {
+      return waitTabComplete(tab.id).then(function () {
+        return ensurePhotopeaBridge(tab.id).then(function () {
+          // Let Photopea boot before first OE message
+          return new Promise(function (r) { setTimeout(r, 900); }).then(function () {
+            return sendBridgeMessage(tab.id, jobId).then(function (res) {
+              if (res && res.ok === false) {
+                console.error("Bridge reported failure:", res.error);
+                notifyError(
+                  browser.i18n.getMessage("alertManualCopy") ||
+                  "Photopea did not accept the image. Try Copy Image → paste in Photopea."
+                );
+              }
+              return res;
+            });
           });
         });
       });
@@ -155,16 +232,8 @@ function openViaBridge(payload, openIn) {
   });
 }
 
-function shouldUseHash(dataUrl) {
-  if (!dataUrl) return false;
-  if (dataUrl.indexOf("blob:") === 0) return false;
-  return dataUrl.length < STP.MAX_HASH_DATA_URL_LENGTH;
-}
-
 /**
- * payload:
- *  mode: open | canvas | blank
- *  dataUrl?, width?, height?, dpi?, fill?, fitMode?
+ * payload: mode open | canvas | blank ; dataUrl? ; remoteUrl? ; width/height/dpi/fill/fitMode
  */
 function openInPhotopea(payload) {
   return getSettings().then(function (settings) {
@@ -174,6 +243,7 @@ function openInPhotopea(payload) {
     var openIn = settings.openIn;
     var merged = Object.assign({}, payload, { fill: fill, fitMode: fitMode, dpi: dpi });
 
+    // Blank canvas: hash is fine (no image race)
     if (merged.mode === "blank") {
       var blankUrl = stpBuildBlankUrl(merged.width, merged.height, {
         dpi: dpi,
@@ -182,22 +252,12 @@ function openInPhotopea(payload) {
       return openTab(blankUrl, openIn);
     }
 
-    if (merged.dataUrl && shouldUseHash(merged.dataUrl)) {
-      var url = merged.mode === "open"
-        ? stpBuildOpenUrl(merged.dataUrl)
-        : stpBuildCanvasUrl(merged.dataUrl, merged.width, merged.height, {
-            dpi: dpi,
-            fill: fill,
-            fitMode: fitMode
-          });
-      // Guard against absurd encoded lengths
-      if (url.length < 1.8e6) {
-        return openTab(url, openIn);
-      }
+    // open + canvas: ALWAYS use bridge (hash script races → empty canvas)
+    if (merged.dataUrl || merged.arrayBuffer || merged.remoteUrl) {
+      return openViaBridge(merged, openIn);
     }
 
-    // Large images / blob: use bridge
-    return openViaBridge(merged, openIn);
+    return openTab(STP.PHOTOPEA_ORIGIN, openIn);
   });
 }
 
@@ -247,11 +307,6 @@ function createContextMenus() {
 }
 
 function resolveImageUrl(info) {
-  // video poster or image src
-  if (info.mediaType === "video" && info.srcUrl) {
-    // Firefox may give video URL; prefer poster if available (not always in info)
-    return info.srcUrl;
-  }
   return info.srcUrl || null;
 }
 
@@ -262,10 +317,14 @@ function handleImageAction(menuItemId, imageUrl, tab) {
   lastImageContext = { srcUrl: imageUrl, tabId: tabId, pageUrl: pageUrl };
   pushRecent({ srcUrl: imageUrl, pageUrl: pageUrl });
 
-  return getOrFetchDataUrl(imageUrl, tabId)
+  return getOrFetchDataUrl(imageUrl, tabId, pageUrl)
     .then(function (dataUrl) {
       if (menuItemId === "photopea-open" || menuItemId === "command-open") {
-        return openInPhotopea({ mode: "open", dataUrl: dataUrl });
+        return openInPhotopea({
+          mode: "open",
+          dataUrl: dataUrl,
+          remoteUrl: imageUrl
+        });
       }
 
       if (String(menuItemId).indexOf("photopea-preset-") === 0) {
@@ -276,6 +335,7 @@ function handleImageAction(menuItemId, imageUrl, tab) {
           return openInPhotopea({
             mode: "canvas",
             dataUrl: dataUrl,
+            remoteUrl: imageUrl,
             width: preset.width,
             height: preset.height,
             dpi: preset.dpi
@@ -285,24 +345,46 @@ function handleImageAction(menuItemId, imageUrl, tab) {
     })
     .catch(function (err) {
       console.error("Image action failed:", err);
-      var msg = browser.i18n.getMessage("alertManualCopy") ||
-        "Could not extract the image. Copy it manually and paste into Photopea (Ctrl+V).";
-      notifyError(msg);
 
-      // Fallback: open blank Photopea / canvas ready for paste
+      // Last resort: open Photopea and let it try the remote URL via OE API
+      // (works when PP can fetch the file even if we couldn't re-encode it)
+      var remoteCandidates = typeof stpImageUrlCandidates === "function"
+        ? stpImageUrlCandidates(imageUrl)
+        : [imageUrl];
+
+      var tryRemote = function (mode, extra) {
+        return openInPhotopea(Object.assign({
+          mode: mode,
+          remoteUrl: remoteCandidates[0] || imageUrl
+        }, extra || {}));
+      };
+
       if (menuItemId === "photopea-open" || menuItemId === "command-open") {
-        return openTab(STP.PHOTOPEA_ORIGIN, "newTab");
+        return tryRemote("open").catch(function () {
+          notifyError(browser.i18n.getMessage("alertManualCopy") ||
+            "Could not extract the image. Copy it manually and paste into Photopea (Ctrl+V).");
+          return openTab(STP.PHOTOPEA_ORIGIN, "newTab");
+        });
       }
+
       if (String(menuItemId).indexOf("photopea-preset-") === 0) {
         var pid = String(menuItemId).replace("photopea-preset-", "");
         return getPresets().then(function (presets) {
           var preset = presets.find(function (p) { return p.id === pid; });
           if (!preset) return;
-          return openInPhotopea({
-            mode: "blank",
+          return tryRemote("canvas", {
             width: preset.width,
             height: preset.height,
             dpi: preset.dpi
+          }).catch(function () {
+            notifyError(browser.i18n.getMessage("alertManualCopy") ||
+              "Could not extract the image. Canvas opened empty — paste with Ctrl+V.");
+            return openInPhotopea({
+              mode: "blank",
+              width: preset.width,
+              height: preset.height,
+              dpi: preset.dpi
+            });
           });
         });
       }
@@ -313,8 +395,10 @@ function handleImageAction(menuItemId, imageUrl, tab) {
 
 browser.contextMenus.onClicked.addListener(function (info, tab) {
   var imageUrl = resolveImageUrl(info);
-  if (!imageUrl) return;
-  // Prefer poster for video if src is media stream-ish — still try
+  if (!imageUrl) {
+    notifyError(browser.i18n.getMessage("notifyNoImage") || "No image URL on this item.");
+    return;
+  }
   handleImageAction(info.menuItemId, imageUrl, tab);
 });
 
@@ -349,7 +433,6 @@ browser.storage.onChanged.addListener(function (changes, area) {
   }
 });
 
-// Keyboard command: open last known image
 browser.commands.onCommand.addListener(function (command) {
   if (command !== "open-in-photopea") return;
 
@@ -357,7 +440,6 @@ browser.commands.onCommand.addListener(function (command) {
   var tabId = lastImageContext.tabId;
 
   if (!src) {
-    // Try active tab: no specific image — open Photopea home
     notifyError(browser.i18n.getMessage("notifyNoImage") ||
       "No image yet. Right‑click an image first, then use the shortcut.");
     openTab(STP.PHOTOPEA_ORIGIN, "newTab");
@@ -371,9 +453,17 @@ browser.commands.onCommand.addListener(function (command) {
   });
 });
 
-// Messages from popup / options
 browser.runtime.onMessage.addListener(function (msg) {
   if (!msg || !msg.type) return;
+
+  if (msg.type === "stp-get-job") {
+    return Promise.resolve(getJob(msg.jobId));
+  }
+
+  if (msg.type === "stp-clear-job") {
+    clearJob(msg.jobId);
+    return Promise.resolve({ ok: true });
+  }
 
   if (msg.type === "stp-open-blank-preset") {
     return openInPhotopea({
@@ -387,7 +477,7 @@ browser.runtime.onMessage.addListener(function (msg) {
   if (msg.type === "stp-open-recent") {
     var tabId = lastImageContext.tabId;
     return browser.tabs.query({ active: true, currentWindow: true }).then(function (tabs) {
-      var tab = tabs[0] || { id: tabId };
+      var tab = tabs[0] || { id: tabId, url: lastImageContext.pageUrl };
       return handleImageAction("photopea-open", msg.srcUrl, tab);
     });
   }

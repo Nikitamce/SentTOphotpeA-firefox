@@ -2,7 +2,7 @@
 
 Firefox extension: right‑click any image (or video) → open it in [Photopea](https://www.photopea.com), or place it on a custom canvas size (Instagram, Full HD, A4, your own presets).
 
-**Version:** 1.1.0  
+**Version:** 1.1.1  
 **Author:** Nikita  
 **Extension ID:** `send-to-photopea@nikita.dev`
 
@@ -84,11 +84,16 @@ Shortcut can be changed: `about:addons` → gear → **Manage Extension Shortcut
 
 ## How image open works
 
-1. Background tries `fetch(imageUrl)` and converts to a data URL  
-2. On failure → injects `content/extract-image.js` (srcset, canvas, page fetch)  
-3. **Small** images → Photopea URL hash (`#{"files":[...]}`)  
-4. **Large** images → open Photopea + `content/photopea-bridge.js` (blob URL + scripting API)  
-5. On total failure → notification + blank Photopea / blank canvas for manual paste  
+1. Background tries **multiple URL candidates** (`shared/image-fetch.js`) — e.g. AMO `thumbs` → `full` PNG  
+2. On failure, if the page is not a Firefox **restricted domain**, injects `content/extract-image.js`  
+3. **Restricted sites** (including `addons.mozilla.org`) block content scripts — only background fetch is used  
+4. Image is sent to Photopea via **OE API ArrayBuffer** (`content/photopea-bridge.js`), not a fragile URL hash  
+5. Canvas placement runs **after** the file is open (avoids empty canvas of the right size)  
+6. On total failure → try remote `app.open(url)`, then notification + blank canvas for manual paste  
+
+### Known limitation
+
+Firefox **forbids** extension content scripts on `addons.mozilla.org`. The extension still downloads preview images by URL from the background. If Mozilla ever blocks that network access too, use “Copy Image” → paste in Photopea.
 
 ---
 
