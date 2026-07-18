@@ -437,6 +437,11 @@ function openImageThenPlaceOnCanvas(dataUrl, width, height, options, openIn) {
     urlLen: openUrl.length
   });
 
+  // Fit-on-screen only (run once more after place, UI needs a tick)
+  var fitOnlyScript = typeof stpFitViewScript === "function"
+    ? stpFitViewScript()
+    : "try { app.runMenuItem(stringIDToTypeID('fitOnScreen')); } catch (e) {}";
+
   return openTab(openUrl, openIn).then(function (tab) {
     return waitTabComplete(tab.id, 45000).then(function () {
       // Let Photopea boot + open the file from hash
@@ -447,7 +452,12 @@ function openImageThenPlaceOnCanvas(dataUrl, width, height, options, openIn) {
       return runPhotopeaScriptInTab(tab.id, placeScript, 20000);
     }).then(function (ok) {
       console.log("STP: place script ok =", ok);
-      if (ok) return tab;
+      if (ok) {
+        // Second fit pass — zoom UI sometimes ignores first call
+        return delay(350).then(function () {
+          return runPhotopeaScriptInTab(tab.id, fitOnlyScript, 8000);
+        }).then(function () { return tab; });
+      }
       // Backup: copy/paste into new document of exact size
       console.log("STP: trying copy/paste canvas script");
       return delay(500).then(function () {
@@ -460,7 +470,9 @@ function openImageThenPlaceOnCanvas(dataUrl, width, height, options, openIn) {
             "Image opened, but canvas size could not be applied automatically."
           );
         }
-        return tab;
+        return delay(350).then(function () {
+          return runPhotopeaScriptInTab(tab.id, fitOnlyScript, 8000);
+        }).then(function () { return tab; });
       });
     }).catch(function (err) {
       console.error("STP: canvas flow error", err);
