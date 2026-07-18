@@ -1,0 +1,120 @@
+{
+  "extensionName": {
+    "message": "Envoyer à Photopea"
+  },
+  "extensionDescription": {
+    "message": "Envoyez des images vers Photopea depuis le menu contextuel - ouvrez tel quel ou collez sur un canevas personnalisé"
+  },
+  "menuParent": {
+    "message": "🎨 Photopea"
+  },
+  "menuOpen": {
+    "message": "📷 Ouvrir l'image"
+  },
+  "menuPreset": {
+    "message": "🖼 Sur le canevas : $name$ ($width$×$height$)",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "width": {
+        "content": "$2"
+      },
+      "height": {
+        "content": "$3"
+      }
+    }
+  },
+  "popupSubtitle": {
+    "message": "Clic droit sur l'image → 🎨 Photopea"
+  },
+  "presetsHeading": {
+    "message": "Préréglages de canevas"
+  },
+  "btnSettings": {
+    "message": "Paramètres"
+  },
+  "emptyPresets": {
+    "message": "Aucun préréglage actif. Ouvrez les paramètres pour en ajouter."
+  },
+  "statusActive": {
+    "message": "Actif"
+  },
+  "statusDisabled": {
+    "message": "Désactivé"
+  },
+  "optionsTitle": {
+    "message": "Envoyer à Photopea — Paramètres"
+  },
+  "optionsHeaderSubtitle": {
+    "message": "v1.0.0 — Paramètres de l'extension"
+  },
+  "optionsSectionHeading": {
+    "message": "Préréglages de canevas"
+  },
+  "optionsSectionDesc": {
+    "message": "Configurez jusqu'à 5 préréglages de taille de canevas. Les préréglages actifs apparaîtront dans le menu contextuel lors d'un clic droit."
+  },
+  "btnSave": {
+    "message": "Enregistrer"
+  },
+  "btnReset": {
+    "message": "Rétablir par défaut"
+  },
+  "footerText": {
+    "message": "Clic droit sur n'importe quelle image → 🎨 Photopea"
+  },
+  "presetNum": {
+    "message": "Préréglage $num$",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "labelName": {
+    "message": "Nom"
+  },
+  "placeholderName": {
+    "message": "Nom du préréglage"
+  },
+  "labelWidth": {
+    "message": "Largeur"
+  },
+  "labelHeight": {
+    "message": "Hauteur"
+  },
+  "toastSaveSuccess": {
+    "message": "✓ Paramètres enregistrés !"
+  },
+  "toastReset": {
+    "message": "↩ Préréglages rétablis par défaut"
+  },
+  "errEnterName": {
+    "message": "Préréglage $num$ : entrez un nom",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "errInvalidWidth": {
+    "message": "Préréglage $num$ : largeur invalide",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "errInvalidHeight": {
+    "message": "Préréglage $num$ : hauteur invalide",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "alertManualCopy": {
+    "message": "Échec de l'extraction automatique de l'image. Veuillez la copier manuellement (clic droit -> 'Copier l'image') et la coller dans Photopea via Ctrl+V."
+  }
+}
