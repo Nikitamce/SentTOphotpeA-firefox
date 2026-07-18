@@ -1,120 +1,94 @@
-{
-  "extensionName": {
-    "message": "Enviar para o Photopea"
-  },
-  "extensionDescription": {
-    "message": "Envie imagens para o Photopea a partir do menu de contexto - abra como está ou cole em uma tela personalizada"
-  },
-  "menuParent": {
-    "message": "🎨 Photopea"
-  },
-  "menuOpen": {
-    "message": "📷 Abrir imagem"
-  },
-  "menuPreset": {
-    "message": "🖼 Para a tela: $name$ ($width$×$height$)",
-    "placeholders": {
-      "name": {
-        "content": "$1"
-      },
-      "width": {
-        "content": "$2"
-      },
-      "height": {
-        "content": "$3"
-      }
-    }
-  },
-  "popupSubtitle": {
-    "message": "Clique com o botão direito na imagem → 🎨 Photopea"
-  },
-  "presetsHeading": {
-    "message": "Predefinições de Tela"
-  },
-  "btnSettings": {
-    "message": "Configurações"
-  },
-  "emptyPresets": {
-    "message": "Nenhuma predefinição ativa. Abra as configurações para adicionar."
-  },
-  "statusActive": {
-    "message": "Ativo"
-  },
-  "statusDisabled": {
-    "message": "Desativado"
-  },
-  "optionsTitle": {
-    "message": "Enviar para o Photopea — Configurações"
-  },
-  "optionsHeaderSubtitle": {
-    "message": "v1.0.0 — Configurações da Extensão"
-  },
-  "optionsSectionHeading": {
-    "message": "Predefinições de Tela"
-  },
-  "optionsSectionDesc": {
-    "message": "Configure até 5 predefinições de tamanho de tela. As predefinições ativas aparecerão no menu de contexto ao clicar com o botão direito."
-  },
-  "btnSave": {
-    "message": "Salvar"
-  },
-  "btnReset": {
-    "message": "Restaurar padrões"
-  },
-  "footerText": {
-    "message": "Clique com o botão direito em qualquer imagem → 🎨 Photopea"
-  },
-  "presetNum": {
-    "message": "Predefinição $num$",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "labelName": {
-    "message": "Nome"
-  },
-  "placeholderName": {
-    "message": "Nome da predefinição"
-  },
-  "labelWidth": {
-    "message": "Largura"
-  },
-  "labelHeight": {
-    "message": "Altura"
-  },
-  "toastSaveSuccess": {
-    "message": "✓ Configurações salvas!"
-  },
-  "toastReset": {
-    "message": "↩ Predefinições restauradas para o padrão"
-  },
-  "errEnterName": {
-    "message": "Predefinição $num$: insira um nome",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "errInvalidWidth": {
-    "message": "Predefinição $num$: largura inválida",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "errInvalidHeight": {
-    "message": "Predefinição $num$: altura inválida",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "alertManualCopy": {
-    "message": "Não foi possível extrair a imagem automaticamente. Copie manualmente (botão direito -> 'Copiar imagem') e cole no Photopea com Ctrl+V."
-  }
+﻿{
+    "extensionName":  {
+                          "message":  "Enviar para o Photopea"
+                      },
+    "menuParent":  {
+                       "message":  "🎨 Photopea"
+                   },
+    "menuOpen":  {
+                     "message":  "📷 Abrir imagem"
+                 },
+    "popupSubtitle":  {
+                          "message":  "Clique com o botão direito na imagem → 🎨 Photopea"
+                      },
+    "presetsHeading":  {
+                           "message":  "Predefinições de Tela"
+                       },
+    "btnSettings":  {
+                        "message":  "Configurações"
+                    },
+    "emptyPresets":  {
+                         "message":  "Nenhuma predefinição ativa. Abra as configurações para adicionar."
+                     },
+    "statusActive":  {
+                         "message":  "Ativo"
+                     },
+    "statusDisabled":  {
+                           "message":  "Desativado"
+                       },
+    "optionsTitle":  {
+                         "message":  "Enviar para o Photopea — Configurações"
+                     },
+    "optionsSectionHeading":  {
+                                  "message":  "Predefinições de Tela"
+                              },
+    "btnSave":  {
+                    "message":  "Salvar"
+                },
+    "btnReset":  {
+                     "message":  "Restaurar padrões"
+                 },
+    "presetNum":  {
+                      "message":  "Predefinição $num$",
+                      "placeholders":  {
+                                           "num":  {
+                                                       "content":  "$1"
+                                                   }
+                                       }
+                  },
+    "labelName":  {
+                      "message":  "Nome"
+                  },
+    "placeholderName":  {
+                            "message":  "Nome da predefinição"
+                        },
+    "labelWidth":  {
+                       "message":  "Largura"
+                   },
+    "labelHeight":  {
+                        "message":  "Altura"
+                    },
+    "toastSaveSuccess":  {
+                             "message":  "✓ Configurações salvas!"
+                         },
+    "toastReset":  {
+                       "message":  "↩ Predefinições restauradas para o padrão"
+                   },
+    "errEnterName":  {
+                         "message":  "Predefinição $num$: insira um nome",
+                         "placeholders":  {
+                                              "num":  {
+                                                          "content":  "$1"
+                                                      }
+                                          }
+                     },
+    "errInvalidWidth":  {
+                            "message":  "Predefinição $num$: largura inválida",
+                            "placeholders":  {
+                                                 "num":  {
+                                                             "content":  "$1"
+                                                         }
+                                             }
+                        },
+    "errInvalidHeight":  {
+                             "message":  "Predefinição $num$: altura inválida",
+                             "placeholders":  {
+                                                  "num":  {
+                                                              "content":  "$1"
+                                                          }
+                                              }
+                         },
+    "alertManualCopy":  {
+                            "message":  "Não foi possível extrair a imagem automaticamente. Copie manualmente (botão direito -\u003e \u0027Copiar imagem\u0027) e cole no Photopea com Ctrl+V."
+                        }
 }

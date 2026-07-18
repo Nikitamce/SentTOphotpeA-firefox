@@ -1,120 +1,94 @@
-{
-  "extensionName": {
-    "message": "Photopea로 보내기"
-  },
-  "extensionDescription": {
-    "message": "우클릭 컨텍스트 메뉴에서 Photopea로 이미지를 보냅니다 - 그대로 열거나 맞춤형 캔버스에 붙여넣기"
-  },
-  "menuParent": {
-    "message": "🎨 Photopea"
-  },
-  "menuOpen": {
-    "message": "📷 이미지 열기"
-  },
-  "menuPreset": {
-    "message": "🖼 캔버스로: $name$ ($width$×$height$)",
-    "placeholders": {
-      "name": {
-        "content": "$1"
-      },
-      "width": {
-        "content": "$2"
-      },
-      "height": {
-        "content": "$3"
-      }
-    }
-  },
-  "popupSubtitle": {
-    "message": "이미지 우클릭 → 🎨 Photopea"
-  },
-  "presetsHeading": {
-    "message": "캔버스 프리셋"
-  },
-  "btnSettings": {
-    "message": "설정"
-  },
-  "emptyPresets": {
-    "message": "활성화된 프리셋이 없습니다. 설정을 열어 추가하세요."
-  },
-  "statusActive": {
-    "message": "활성"
-  },
-  "statusDisabled": {
-    "message": "비활성"
-  },
-  "optionsTitle": {
-    "message": "Photopea로 보내기 — 설정"
-  },
-  "optionsHeaderSubtitle": {
-    "message": "v1.0.0 — 확장 프로그램 설정"
-  },
-  "optionsSectionHeading": {
-    "message": "캔버스 프리셋"
-  },
-  "optionsSectionDesc": {
-    "message": "최대 5개의 캔버스 크기 프리셋을 설정할 수 있습니다. 활성화된 프리셋은 이미지를 우클릭할 때 컨텍스트 메뉴에 나타납니다."
-  },
-  "btnSave": {
-    "message": "저장"
-  },
-  "btnReset": {
-    "message": "기본값으로 재설정"
-  },
-  "footerText": {
-    "message": "아무 이미지나 우클릭 → 🎨 Photopea"
-  },
-  "presetNum": {
-    "message": "프리셋 $num$",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "labelName": {
-    "message": "이름"
-  },
-  "placeholderName": {
-    "message": "프리셋 이름"
-  },
-  "labelWidth": {
-    "message": "너비"
-  },
-  "labelHeight": {
-    "message": "높이"
-  },
-  "toastSaveSuccess": {
-    "message": "✓ 설정이 저장되었습니다!"
-  },
-  "toastReset": {
-    "message": "↩ 프리셋이 기본값으로 초기화되었습니다"
-  },
-  "errEnterName": {
-    "message": "프리셋 $num$: 이름을 입력하세요",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "errInvalidWidth": {
-    "message": "프리셋 $num$: 너비가 잘못되었습니다",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "errInvalidHeight": {
-    "message": "프리셋 $num$: 높이가 잘못되었습니다",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "alertManualCopy": {
-    "message": "이미지를 자동으로 가져오지 못했습니다. 수동으로 복사(우클릭 -> '이미지 복사')한 후 Photopea에서 Ctrl+V를 눌러 붙여넣으세요."
-  }
+﻿{
+    "extensionName":  {
+                          "message":  "Photopea로 보내기"
+                      },
+    "menuParent":  {
+                       "message":  "🎨 Photopea"
+                   },
+    "menuOpen":  {
+                     "message":  "📷 이미지 열기"
+                 },
+    "popupSubtitle":  {
+                          "message":  "이미지 우클릭 → 🎨 Photopea"
+                      },
+    "presetsHeading":  {
+                           "message":  "캔버스 프리셋"
+                       },
+    "btnSettings":  {
+                        "message":  "설정"
+                    },
+    "emptyPresets":  {
+                         "message":  "활성화된 프리셋이 없습니다. 설정을 열어 추가하세요."
+                     },
+    "statusActive":  {
+                         "message":  "활성"
+                     },
+    "statusDisabled":  {
+                           "message":  "비활성"
+                       },
+    "optionsTitle":  {
+                         "message":  "Photopea로 보내기 — 설정"
+                     },
+    "optionsSectionHeading":  {
+                                  "message":  "캔버스 프리셋"
+                              },
+    "btnSave":  {
+                    "message":  "저장"
+                },
+    "btnReset":  {
+                     "message":  "기본값으로 재설정"
+                 },
+    "presetNum":  {
+                      "message":  "프리셋 $num$",
+                      "placeholders":  {
+                                           "num":  {
+                                                       "content":  "$1"
+                                                   }
+                                       }
+                  },
+    "labelName":  {
+                      "message":  "이름"
+                  },
+    "placeholderName":  {
+                            "message":  "프리셋 이름"
+                        },
+    "labelWidth":  {
+                       "message":  "너비"
+                   },
+    "labelHeight":  {
+                        "message":  "높이"
+                    },
+    "toastSaveSuccess":  {
+                             "message":  "✓ 설정이 저장되었습니다!"
+                         },
+    "toastReset":  {
+                       "message":  "↩ 프리셋이 기본값으로 초기화되었습니다"
+                   },
+    "errEnterName":  {
+                         "message":  "프리셋 $num$: 이름을 입력하세요",
+                         "placeholders":  {
+                                              "num":  {
+                                                          "content":  "$1"
+                                                      }
+                                          }
+                     },
+    "errInvalidWidth":  {
+                            "message":  "프리셋 $num$: 너비가 잘못되었습니다",
+                            "placeholders":  {
+                                                 "num":  {
+                                                             "content":  "$1"
+                                                         }
+                                             }
+                        },
+    "errInvalidHeight":  {
+                             "message":  "프리셋 $num$: 높이가 잘못되었습니다",
+                             "placeholders":  {
+                                                  "num":  {
+                                                              "content":  "$1"
+                                                          }
+                                              }
+                         },
+    "alertManualCopy":  {
+                            "message":  "이미지를 자동으로 가져오지 못했습니다. 수동으로 복사(우클릭 -\u003e \u0027이미지 복사\u0027)한 후 Photopea에서 Ctrl+V를 눌러 붙여넣으세요."
+                        }
 }

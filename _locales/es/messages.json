@@ -1,120 +1,94 @@
-{
-  "extensionName": {
-    "message": "Enviar a Photopea"
-  },
-  "extensionDescription": {
-    "message": "Envía imágenes a Photopea desde el menú contextual: ábrelas tal cual o pégalas en un lienzo personalizado"
-  },
-  "menuParent": {
-    "message": "🎨 Photopea"
-  },
-  "menuOpen": {
-    "message": "📷 Abrir imagen"
-  },
-  "menuPreset": {
-    "message": "🖼 Al lienzo: $name$ ($width$×$height$)",
-    "placeholders": {
-      "name": {
-        "content": "$1"
-      },
-      "width": {
-        "content": "$2"
-      },
-      "height": {
-        "content": "$3"
-      }
-    }
-  },
-  "popupSubtitle": {
-    "message": "Clic derecho en la imagen → 🎨 Photopea"
-  },
-  "presetsHeading": {
-    "message": "Ajustes preestablecidos"
-  },
-  "btnSettings": {
-    "message": "Configuración"
-  },
-  "emptyPresets": {
-    "message": "No hay ajustes activos. Abre la configuración para añadir."
-  },
-  "statusActive": {
-    "message": "Activo"
-  },
-  "statusDisabled": {
-    "message": "Desactivado"
-  },
-  "optionsTitle": {
-    "message": "Enviar a Photopea — Configuración"
-  },
-  "optionsHeaderSubtitle": {
-    "message": "v1.0.0 — Configuración de la extensión"
-  },
-  "optionsSectionHeading": {
-    "message": "Ajustes preestablecidos"
-  },
-  "optionsSectionDesc": {
-    "message": "Configura hasta 5 tamaños de lienzo. Los ajustes activos aparecerán en el menú contextual al hacer clic derecho."
-  },
-  "btnSave": {
-    "message": "Guardar"
-  },
-  "btnReset": {
-    "message": "Restablecer valores"
-  },
-  "footerText": {
-    "message": "Clic derecho en cualquier imagen → 🎨 Photopea"
-  },
-  "presetNum": {
-    "message": "Ajuste $num$",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "labelName": {
-    "message": "Nombre"
-  },
-  "placeholderName": {
-    "message": "Nombre del ajuste"
-  },
-  "labelWidth": {
-    "message": "Ancho"
-  },
-  "labelHeight": {
-    "message": "Alto"
-  },
-  "toastSaveSuccess": {
-    "message": "✓ ¡Configuración guardada!"
-  },
-  "toastReset": {
-    "message": "↩ Ajustes restablecidos por defecto"
-  },
-  "errEnterName": {
-    "message": "Ajuste $num$: ingresa un nombre",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "errInvalidWidth": {
-    "message": "Ajuste $num$: ancho inválido",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "errInvalidHeight": {
-    "message": "Ajuste $num$: alto inválido",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "alertManualCopy": {
-    "message": "No se pudo extraer la imagen automáticamente. Cópiala manualmente (clic derecho -> 'Copiar imagen') y pégala en Photopea con Ctrl+V."
-  }
+﻿{
+    "extensionName":  {
+                          "message":  "Enviar a Photopea"
+                      },
+    "menuParent":  {
+                       "message":  "🎨 Photopea"
+                   },
+    "menuOpen":  {
+                     "message":  "📷 Abrir imagen"
+                 },
+    "popupSubtitle":  {
+                          "message":  "Clic derecho en la imagen → 🎨 Photopea"
+                      },
+    "presetsHeading":  {
+                           "message":  "Ajustes preestablecidos"
+                       },
+    "btnSettings":  {
+                        "message":  "Configuración"
+                    },
+    "emptyPresets":  {
+                         "message":  "No hay ajustes activos. Abre la configuración para añadir."
+                     },
+    "statusActive":  {
+                         "message":  "Activo"
+                     },
+    "statusDisabled":  {
+                           "message":  "Desactivado"
+                       },
+    "optionsTitle":  {
+                         "message":  "Enviar a Photopea — Configuración"
+                     },
+    "optionsSectionHeading":  {
+                                  "message":  "Ajustes preestablecidos"
+                              },
+    "btnSave":  {
+                    "message":  "Guardar"
+                },
+    "btnReset":  {
+                     "message":  "Restablecer valores"
+                 },
+    "presetNum":  {
+                      "message":  "Ajuste $num$",
+                      "placeholders":  {
+                                           "num":  {
+                                                       "content":  "$1"
+                                                   }
+                                       }
+                  },
+    "labelName":  {
+                      "message":  "Nombre"
+                  },
+    "placeholderName":  {
+                            "message":  "Nombre del ajuste"
+                        },
+    "labelWidth":  {
+                       "message":  "Ancho"
+                   },
+    "labelHeight":  {
+                        "message":  "Alto"
+                    },
+    "toastSaveSuccess":  {
+                             "message":  "✓ ¡Configuración guardada!"
+                         },
+    "toastReset":  {
+                       "message":  "↩ Ajustes restablecidos por defecto"
+                   },
+    "errEnterName":  {
+                         "message":  "Ajuste $num$: ingresa un nombre",
+                         "placeholders":  {
+                                              "num":  {
+                                                          "content":  "$1"
+                                                      }
+                                          }
+                     },
+    "errInvalidWidth":  {
+                            "message":  "Ajuste $num$: ancho inválido",
+                            "placeholders":  {
+                                                 "num":  {
+                                                             "content":  "$1"
+                                                         }
+                                             }
+                        },
+    "errInvalidHeight":  {
+                             "message":  "Ajuste $num$: alto inválido",
+                             "placeholders":  {
+                                                  "num":  {
+                                                              "content":  "$1"
+                                                          }
+                                              }
+                         },
+    "alertManualCopy":  {
+                            "message":  "No se pudo extraer la imagen automáticamente. Cópiala manualmente (clic derecho -\u003e \u0027Copiar imagen\u0027) y pégala en Photopea con Ctrl+V."
+                        }
 }

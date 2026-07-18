@@ -3,7 +3,7 @@
     "message": "Send to Photopea"
   },
   "extensionDescription": {
-    "message": "Отправляйте изображения в Photopea прямо из контекстного меню — откройте как есть или вставьте на настраиваемый холст"
+    "message": "Отправляйте изображения в Photopea из контекстного меню — откройте как есть или вставьте на настраиваемый холст с режимами вписывания."
   },
   "menuParent": {
     "message": "🎨 Photopea"
@@ -12,17 +12,12 @@
     "message": "📷 Открыть изображение"
   },
   "menuPreset": {
-    "message": "🖼 На холст: $name$ ($width$×$height$)",
+    "message": "$icon$ На холст: $name$ ($width$×$height$)",
     "placeholders": {
-      "name": {
-        "content": "$1"
-      },
-      "width": {
-        "content": "$2"
-      },
-      "height": {
-        "content": "$3"
-      }
+      "icon": { "content": "$1" },
+      "name": { "content": "$2" },
+      "width": { "content": "$3" },
+      "height": { "content": "$4" }
     }
   },
   "popupSubtitle": {
@@ -31,8 +26,26 @@
   "presetsHeading": {
     "message": "Пресеты холста"
   },
+  "recentHeading": {
+    "message": "Недавние изображения"
+  },
   "btnSettings": {
     "message": "Настройки"
+  },
+  "btnOpenPhotopea": {
+    "message": "Открыть Photopea"
+  },
+  "popupOpenBlank": {
+    "message": "Холст"
+  },
+  "popupPresetHint": {
+    "message": "Открыть пустой холст этого размера в Photopea"
+  },
+  "popupShortcutHint": {
+    "message": "Горячая клавиша: Alt+Shift+P (последнее изображение)"
+  },
+  "recentDataImage": {
+    "message": "Встроенное изображение"
   },
   "emptyPresets": {
     "message": "Нет активных пресетов. Откройте настройки, чтобы добавить."
@@ -47,13 +60,70 @@
     "message": "Send to Photopea — Настройки"
   },
   "optionsHeaderSubtitle": {
-    "message": "v1.0.0 — Настройки расширения"
+    "message": "Настройки расширения"
+  },
+  "optionsHeaderSubtitleShort": {
+    "message": "Настройки расширения"
   },
   "optionsSectionHeading": {
     "message": "Пресеты холста"
   },
   "optionsSectionDesc": {
-    "message": "Настройте до 5 пресетов размеров холста. Активные пресеты появятся в контекстном меню при правом клике на изображение."
+    "message": "Активные пресеты появятся в контекстном меню. Можно добавить до 15."
+  },
+  "settingsSectionHeading": {
+    "message": "Основные"
+  },
+  "settingsSectionDesc": {
+    "message": "Как открывается Photopea и как изображение размещается на холсте."
+  },
+  "labelOpenIn": {
+    "message": "Открывать в"
+  },
+  "optNewTab": {
+    "message": "Новой вкладке"
+  },
+  "optCurrentTab": {
+    "message": "Текущей вкладке"
+  },
+  "labelFitMode": {
+    "message": "Размещение изображения"
+  },
+  "optFitCenter": {
+    "message": "По центру (исходный размер)"
+  },
+  "optFitContain": {
+    "message": "Вписать в холст"
+  },
+  "optFitCover": {
+    "message": "Заполнить холст (обрезка)"
+  },
+  "optFitStretch": {
+    "message": "Растянуть на холст"
+  },
+  "labelCanvasFill": {
+    "message": "Фон холста"
+  },
+  "optFillWhite": {
+    "message": "Белый"
+  },
+  "optFillTransparent": {
+    "message": "Прозрачный"
+  },
+  "optFillBlack": {
+    "message": "Чёрный"
+  },
+  "labelDefaultDpi": {
+    "message": "DPI по умолчанию"
+  },
+  "labelNotifyOnError": {
+    "message": "Уведомление, если не удалось извлечь изображение"
+  },
+  "shortcutHint": {
+    "message": "Горячая клавиша: Alt+Shift+P открывает последнее изображение (изменить: about:addons → шестерёнка → Управление горячими клавишами)."
+  },
+  "permissionHint": {
+    "message": "Право «доступ к данным всех сайтов» нужно только чтобы скачать картинки с защитой от hotlink (CORS) и открыть их в Photopea."
   },
   "btnSave": {
     "message": "Сохранить"
@@ -61,19 +131,29 @@
   "btnReset": {
     "message": "Сбросить по умолчанию"
   },
+  "btnAddPreset": {
+    "message": "+ Добавить пресет"
+  },
+  "btnRemovePreset": {
+    "message": "Удалить пресет"
+  },
+  "newPresetName": {
+    "message": "Новый пресет"
+  },
   "footerText": {
-    "message": "Используйте правый клик на любом изображении → 🎨 Photopea"
+    "message": "Правый клик по изображению → 🎨 Photopea"
   },
   "presetNum": {
     "message": "Пресет $num$",
     "placeholders": {
-      "num": {
-        "content": "$1"
-      }
+      "num": { "content": "$1" }
     }
   },
   "labelName": {
     "message": "Название"
+  },
+  "labelIcon": {
+    "message": "Иконка"
   },
   "placeholderName": {
     "message": "Название пресета"
@@ -84,37 +164,49 @@
   "labelHeight": {
     "message": "Высота"
   },
+  "labelDpi": {
+    "message": "DPI"
+  },
   "toastSaveSuccess": {
     "message": "✓ Настройки сохранены!"
   },
   "toastReset": {
-    "message": "↩ Пресеты сброшены по умолчанию"
+    "message": "↩ Пресеты и настройки сброшены"
   },
   "errEnterName": {
     "message": "Пресет $num$: введите название",
     "placeholders": {
-      "num": {
-        "content": "$1"
-      }
+      "num": { "content": "$1" }
     }
   },
   "errInvalidWidth": {
     "message": "Пресет $num$: некорректная ширина",
     "placeholders": {
-      "num": {
-        "content": "$1"
-      }
+      "num": { "content": "$1" }
     }
   },
   "errInvalidHeight": {
     "message": "Пресет $num$: некорректная высота",
     "placeholders": {
-      "num": {
-        "content": "$1"
-      }
+      "num": { "content": "$1" }
     }
   },
+  "errInvalidDpi": {
+    "message": "Пресет $num$: некорректный DPI",
+    "placeholders": {
+      "num": { "content": "$1" }
+    }
+  },
+  "errMinPresets": {
+    "message": "Оставьте хотя бы один пресет"
+  },
   "alertManualCopy": {
-    "message": "Не удалось автоматически извлечь изображение. Пожалуйста, скопируйте его вручную (правый клик -> 'Копировать изображение') и вставьте в Photopea через Ctrl+V."
+    "message": "Не удалось автоматически извлечь изображение. Скопируйте вручную (ПКМ → «Копировать изображение») и вставьте в Photopea через Ctrl+V."
+  },
+  "notifyNoImage": {
+    "message": "Пока нет изображения. Сначала ПКМ по картинке, затем горячая клавиша."
+  },
+  "commandOpenDescription": {
+    "message": "Открыть последнее изображение в Photopea"
   }
 }

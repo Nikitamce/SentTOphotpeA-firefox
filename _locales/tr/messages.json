@@ -1,120 +1,94 @@
-{
-  "extensionName": {
-    "message": "Photopea'ya Gönder"
-  },
-  "extensionDescription": {
-    "message": "Bağlam menüsünden resimleri doğrudan Photopea'ya gönderin - olduğu gibi açın veya özel bir tuvale yapıştırın"
-  },
-  "menuParent": {
-    "message": "🎨 Photopea"
-  },
-  "menuOpen": {
-    "message": "📷 Resmi aç"
-  },
-  "menuPreset": {
-    "message": "🖼 Tuvale: $name$ ($width$×$height$)",
-    "placeholders": {
-      "name": {
-        "content": "$1"
-      },
-      "width": {
-        "content": "$2"
-      },
-      "height": {
-        "content": "$3"
-      }
-    }
-  },
-  "popupSubtitle": {
-    "message": "Resme sağ tıklayın → 🎨 Photopea"
-  },
-  "presetsHeading": {
-    "message": "Tuval Şablonları"
-  },
-  "btnSettings": {
-    "message": "Ayarlar"
-  },
-  "emptyPresets": {
-    "message": "Etkin şablon yok. Eklemek için ayarları açın."
-  },
-  "statusActive": {
-    "message": "Etkin"
-  },
-  "statusDisabled": {
-    "message": "Devre dışı"
-  },
-  "optionsTitle": {
-    "message": "Photopea'ya Gönder — Ayarlar"
-  },
-  "optionsHeaderSubtitle": {
-    "message": "v1.0.0 — Uzantı Ayarları"
-  },
-  "optionsSectionHeading": {
-    "message": "Tuval Şablonları"
-  },
-  "optionsSectionDesc": {
-    "message": "En fazla 5 tuval boyutu şablonu yapılandırın. Etkin şablonlar resme sağ tıkladığınızda bağlam menüsünde görünecektir."
-  },
-  "btnSave": {
-    "message": "Kaydet"
-  },
-  "btnReset": {
-    "message": "Varsayılana sıfırla"
-  },
-  "footerText": {
-    "message": "Herhangi bir resme sağ tıklayın → 🎨 Photopea"
-  },
-  "presetNum": {
-    "message": "Şablon $num$",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "labelName": {
-    "message": "Ad"
-  },
-  "placeholderName": {
-    "message": "Şablon adı"
-  },
-  "labelWidth": {
-    "message": "Genişlik"
-  },
-  "labelHeight": {
-    "message": "Yükseklik"
-  },
-  "toastSaveSuccess": {
-    "message": "✓ Ayarlar kaydedildi!"
-  },
-  "toastReset": {
-    "message": "↩ Şablonlar varsayılana sıfırlandı"
-  },
-  "errEnterName": {
-    "message": "Şablon $num$: ad girin",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "errInvalidWidth": {
-    "message": "Şablon $num$: geçersiz genişlik",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "errInvalidHeight": {
-    "message": "Şablon $num$: geçersiz yükseklik",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "alertManualCopy": {
-    "message": "Resim otomatik olarak alınamadı. Lütfen manuel olarak kopyalayın (sağ tık -> 'Resmi Kopyala') ve Ctrl+V tuşuyla Photopea'ya yapıştırın."
-  }
+﻿{
+    "extensionName":  {
+                          "message":  "Photopea\u0027ya Gönder"
+                      },
+    "menuParent":  {
+                       "message":  "🎨 Photopea"
+                   },
+    "menuOpen":  {
+                     "message":  "📷 Resmi aç"
+                 },
+    "popupSubtitle":  {
+                          "message":  "Resme sağ tıklayın → 🎨 Photopea"
+                      },
+    "presetsHeading":  {
+                           "message":  "Tuval Şablonları"
+                       },
+    "btnSettings":  {
+                        "message":  "Ayarlar"
+                    },
+    "emptyPresets":  {
+                         "message":  "Etkin şablon yok. Eklemek için ayarları açın."
+                     },
+    "statusActive":  {
+                         "message":  "Etkin"
+                     },
+    "statusDisabled":  {
+                           "message":  "Devre dışı"
+                       },
+    "optionsTitle":  {
+                         "message":  "Photopea\u0027ya Gönder — Ayarlar"
+                     },
+    "optionsSectionHeading":  {
+                                  "message":  "Tuval Şablonları"
+                              },
+    "btnSave":  {
+                    "message":  "Kaydet"
+                },
+    "btnReset":  {
+                     "message":  "Varsayılana sıfırla"
+                 },
+    "presetNum":  {
+                      "message":  "Şablon $num$",
+                      "placeholders":  {
+                                           "num":  {
+                                                       "content":  "$1"
+                                                   }
+                                       }
+                  },
+    "labelName":  {
+                      "message":  "Ad"
+                  },
+    "placeholderName":  {
+                            "message":  "Şablon adı"
+                        },
+    "labelWidth":  {
+                       "message":  "Genişlik"
+                   },
+    "labelHeight":  {
+                        "message":  "Yükseklik"
+                    },
+    "toastSaveSuccess":  {
+                             "message":  "✓ Ayarlar kaydedildi!"
+                         },
+    "toastReset":  {
+                       "message":  "↩ Şablonlar varsayılana sıfırlandı"
+                   },
+    "errEnterName":  {
+                         "message":  "Şablon $num$: ad girin",
+                         "placeholders":  {
+                                              "num":  {
+                                                          "content":  "$1"
+                                                      }
+                                          }
+                     },
+    "errInvalidWidth":  {
+                            "message":  "Şablon $num$: geçersiz genişlik",
+                            "placeholders":  {
+                                                 "num":  {
+                                                             "content":  "$1"
+                                                         }
+                                             }
+                        },
+    "errInvalidHeight":  {
+                             "message":  "Şablon $num$: geçersiz yükseklik",
+                             "placeholders":  {
+                                                  "num":  {
+                                                              "content":  "$1"
+                                                          }
+                                              }
+                         },
+    "alertManualCopy":  {
+                            "message":  "Resim otomatik olarak alınamadı. Lütfen manuel olarak kopyalayın (sağ tık -\u003e \u0027Resmi Kopyala\u0027) ve Ctrl+V tuşuyla Photopea\u0027ya yapıştırın."
+                        }
 }

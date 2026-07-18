@@ -3,7 +3,7 @@
     "message": "Send to Photopea"
   },
   "extensionDescription": {
-    "message": "Send images to Photopea from context menu - open as is or paste onto a custom canvas"
+    "message": "Send images to Photopea from the context menu — open as-is or place on a custom canvas with fit modes and presets."
   },
   "menuParent": {
     "message": "🎨 Photopea"
@@ -12,27 +12,40 @@
     "message": "📷 Open image"
   },
   "menuPreset": {
-    "message": "🖼 To canvas: $name$ ($width$×$height$)",
+    "message": "$icon$ To canvas: $name$ ($width$×$height$)",
     "placeholders": {
-      "name": {
-        "content": "$1"
-      },
-      "width": {
-        "content": "$2"
-      },
-      "height": {
-        "content": "$3"
-      }
+      "icon": { "content": "$1" },
+      "name": { "content": "$2" },
+      "width": { "content": "$3" },
+      "height": { "content": "$4" }
     }
   },
   "popupSubtitle": {
-    "message": "Right click on image → 🎨 Photopea"
+    "message": "Right‑click an image → 🎨 Photopea"
   },
   "presetsHeading": {
-    "message": "Canvas Presets"
+    "message": "Canvas presets"
+  },
+  "recentHeading": {
+    "message": "Recent images"
   },
   "btnSettings": {
     "message": "Settings"
+  },
+  "btnOpenPhotopea": {
+    "message": "Open Photopea"
+  },
+  "popupOpenBlank": {
+    "message": "Blank"
+  },
+  "popupPresetHint": {
+    "message": "Open a blank canvas of this size in Photopea"
+  },
+  "popupShortcutHint": {
+    "message": "Shortcut: Alt+Shift+P (last image)"
+  },
+  "recentDataImage": {
+    "message": "Embedded image"
   },
   "emptyPresets": {
     "message": "No active presets. Open settings to add."
@@ -47,13 +60,70 @@
     "message": "Send to Photopea — Settings"
   },
   "optionsHeaderSubtitle": {
-    "message": "v1.0.0 — Extension Settings"
+    "message": "Extension settings"
+  },
+  "optionsHeaderSubtitleShort": {
+    "message": "Extension settings"
   },
   "optionsSectionHeading": {
-    "message": "Canvas Presets"
+    "message": "Canvas presets"
   },
   "optionsSectionDesc": {
-    "message": "Configure up to 5 canvas size presets. Active presets will appear in the context menu when right-clicking an image."
+    "message": "Active presets appear in the context menu when you right‑click an image. You can add up to 15."
+  },
+  "settingsSectionHeading": {
+    "message": "General"
+  },
+  "settingsSectionDesc": {
+    "message": "How Photopea opens and how images are placed on the canvas."
+  },
+  "labelOpenIn": {
+    "message": "Open in"
+  },
+  "optNewTab": {
+    "message": "New tab"
+  },
+  "optCurrentTab": {
+    "message": "Current tab"
+  },
+  "labelFitMode": {
+    "message": "Image placement"
+  },
+  "optFitCenter": {
+    "message": "Center (original size)"
+  },
+  "optFitContain": {
+    "message": "Fit inside canvas"
+  },
+  "optFitCover": {
+    "message": "Fill canvas (crop)"
+  },
+  "optFitStretch": {
+    "message": "Stretch to canvas"
+  },
+  "labelCanvasFill": {
+    "message": "Canvas background"
+  },
+  "optFillWhite": {
+    "message": "White"
+  },
+  "optFillTransparent": {
+    "message": "Transparent"
+  },
+  "optFillBlack": {
+    "message": "Black"
+  },
+  "labelDefaultDpi": {
+    "message": "Default DPI"
+  },
+  "labelNotifyOnError": {
+    "message": "Show notification if image cannot be extracted"
+  },
+  "shortcutHint": {
+    "message": "Keyboard shortcut: Alt+Shift+P opens the last right‑clicked image (change in about:addons → gear → Manage Extension Shortcuts)."
+  },
+  "permissionHint": {
+    "message": "“Access your data for all websites” is only used to download images that block hotlinking (CORS), so Photopea can open them."
   },
   "btnSave": {
     "message": "Save"
@@ -61,19 +131,29 @@
   "btnReset": {
     "message": "Reset to default"
   },
+  "btnAddPreset": {
+    "message": "+ Add preset"
+  },
+  "btnRemovePreset": {
+    "message": "Remove preset"
+  },
+  "newPresetName": {
+    "message": "New preset"
+  },
   "footerText": {
-    "message": "Use right click on any image → 🎨 Photopea"
+    "message": "Right‑click any image → 🎨 Photopea"
   },
   "presetNum": {
     "message": "Preset $num$",
     "placeholders": {
-      "num": {
-        "content": "$1"
-      }
+      "num": { "content": "$1" }
     }
   },
   "labelName": {
     "message": "Name"
+  },
+  "labelIcon": {
+    "message": "Icon"
   },
   "placeholderName": {
     "message": "Preset name"
@@ -84,37 +164,49 @@
   "labelHeight": {
     "message": "Height"
   },
+  "labelDpi": {
+    "message": "DPI"
+  },
   "toastSaveSuccess": {
     "message": "✓ Settings saved!"
   },
   "toastReset": {
-    "message": "↩ Presets reset to default"
+    "message": "↩ Presets and settings reset to default"
   },
   "errEnterName": {
-    "message": "Preset $num$: enter name",
+    "message": "Preset $num$: enter a name",
     "placeholders": {
-      "num": {
-        "content": "$1"
-      }
+      "num": { "content": "$1" }
     }
   },
   "errInvalidWidth": {
     "message": "Preset $num$: invalid width",
     "placeholders": {
-      "num": {
-        "content": "$1"
-      }
+      "num": { "content": "$1" }
     }
   },
   "errInvalidHeight": {
     "message": "Preset $num$: invalid height",
     "placeholders": {
-      "num": {
-        "content": "$1"
-      }
+      "num": { "content": "$1" }
     }
   },
+  "errInvalidDpi": {
+    "message": "Preset $num$: invalid DPI",
+    "placeholders": {
+      "num": { "content": "$1" }
+    }
+  },
+  "errMinPresets": {
+    "message": "Keep at least one preset"
+  },
   "alertManualCopy": {
-    "message": "Failed to automatically extract the image. Please copy it manually (right-click -> 'Copy Image') and paste into Photopea via Ctrl+V."
+    "message": "Could not extract the image automatically. Copy it manually (right‑click → Copy Image) and paste into Photopea with Ctrl+V."
+  },
+  "notifyNoImage": {
+    "message": "No image yet. Right‑click an image first, then use the shortcut."
+  },
+  "commandOpenDescription": {
+    "message": "Open the last image in Photopea"
   }
 }

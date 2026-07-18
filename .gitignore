@@ -1,0 +1,17 @@
+# Nested accidental copy of the extension
+photopea/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Packages
+*.zip
+*.xpi
+
+# Secrets
+.env
+*.pem

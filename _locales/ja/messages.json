@@ -1,120 +1,94 @@
-{
-  "extensionName": {
-    "message": "Photopea に送信"
-  },
-  "extensionDescription": {
-    "message": "右クリックのコンテキストメニューから画像を Photopea に送信します。そのまま開くか、カスタムキャンバスに貼り付けます。"
-  },
-  "menuParent": {
-    "message": "🎨 Photopea"
-  },
-  "menuOpen": {
-    "message": "📷 画像を開く"
-  },
-  "menuPreset": {
-    "message": "🖼 キャンバスへ: $name$ ($width$×$height$)",
-    "placeholders": {
-      "name": {
-        "content": "$1"
-      },
-      "width": {
-        "content": "$2"
-      },
-      "height": {
-        "content": "$3"
-      }
-    }
-  },
-  "popupSubtitle": {
-    "message": "画像を右クリック → 🎨 Photopea"
-  },
-  "presetsHeading": {
-    "message": "キャンバスのプリセット"
-  },
-  "btnSettings": {
-    "message": "設定"
-  },
-  "emptyPresets": {
-    "message": "有効なプリセットがありません。設定を開いて追加してください。"
-  },
-  "statusActive": {
-    "message": "有効"
-  },
-  "statusDisabled": {
-    "message": "無効"
-  },
-  "optionsTitle": {
-    "message": "Photopea に送信 — 設定"
-  },
-  "optionsHeaderSubtitle": {
-    "message": "v1.0.0 — 拡張機能の設定"
-  },
-  "optionsSectionHeading": {
-    "message": "キャンバスのプリセット"
-  },
-  "optionsSectionDesc": {
-    "message": "最大5つのキャンバスサイズプリセットを設定できます。有効なプリセットは右クリック時のコンテキストメニューに表示されます。"
-  },
-  "btnSave": {
-    "message": "保存"
-  },
-  "btnReset": {
-    "message": "デフォルトに戻す"
-  },
-  "footerText": {
-    "message": "任意の画像を右クリック → 🎨 Photopea"
-  },
-  "presetNum": {
-    "message": "プリセット $num$",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "labelName": {
-    "message": "名前"
-  },
-  "placeholderName": {
-    "message": "プリセット名"
-  },
-  "labelWidth": {
-    "message": "幅"
-  },
-  "labelHeight": {
-    "message": "高さ"
-  },
-  "toastSaveSuccess": {
-    "message": "✓ 設定を保存しました！"
-  },
-  "toastReset": {
-    "message": "↩ プリセットをデフォルトにリセットしました"
-  },
-  "errEnterName": {
-    "message": "プリセット $num$: 名前を入力してください",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "errInvalidWidth": {
-    "message": "プリセット $num$: 幅が正しくありません",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "errInvalidHeight": {
-    "message": "プリセット $num$: 高さが正しくありません",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "alertManualCopy": {
-    "message": "画像の自動抽出に失敗しました。手動でコピー（右クリック -> 「画像をコピー」）し、PhotopeaでCtrl+Vキーを押して貼り付けてください。"
-  }
+﻿{
+    "extensionName":  {
+                          "message":  "Photopea に送信"
+                      },
+    "menuParent":  {
+                       "message":  "🎨 Photopea"
+                   },
+    "menuOpen":  {
+                     "message":  "📷 画像を開く"
+                 },
+    "popupSubtitle":  {
+                          "message":  "画像を右クリック → 🎨 Photopea"
+                      },
+    "presetsHeading":  {
+                           "message":  "キャンバスのプリセット"
+                       },
+    "btnSettings":  {
+                        "message":  "設定"
+                    },
+    "emptyPresets":  {
+                         "message":  "有効なプリセットがありません。設定を開いて追加してください。"
+                     },
+    "statusActive":  {
+                         "message":  "有効"
+                     },
+    "statusDisabled":  {
+                           "message":  "無効"
+                       },
+    "optionsTitle":  {
+                         "message":  "Photopea に送信 — 設定"
+                     },
+    "optionsSectionHeading":  {
+                                  "message":  "キャンバスのプリセット"
+                              },
+    "btnSave":  {
+                    "message":  "保存"
+                },
+    "btnReset":  {
+                     "message":  "デフォルトに戻す"
+                 },
+    "presetNum":  {
+                      "message":  "プリセット $num$",
+                      "placeholders":  {
+                                           "num":  {
+                                                       "content":  "$1"
+                                                   }
+                                       }
+                  },
+    "labelName":  {
+                      "message":  "名前"
+                  },
+    "placeholderName":  {
+                            "message":  "プリセット名"
+                        },
+    "labelWidth":  {
+                       "message":  "幅"
+                   },
+    "labelHeight":  {
+                        "message":  "高さ"
+                    },
+    "toastSaveSuccess":  {
+                             "message":  "✓ 設定を保存しました！"
+                         },
+    "toastReset":  {
+                       "message":  "↩ プリセットをデフォルトにリセットしました"
+                   },
+    "errEnterName":  {
+                         "message":  "プリセット $num$: 名前を入力してください",
+                         "placeholders":  {
+                                              "num":  {
+                                                          "content":  "$1"
+                                                      }
+                                          }
+                     },
+    "errInvalidWidth":  {
+                            "message":  "プリセット $num$: 幅が正しくありません",
+                            "placeholders":  {
+                                                 "num":  {
+                                                             "content":  "$1"
+                                                         }
+                                             }
+                        },
+    "errInvalidHeight":  {
+                             "message":  "プリセット $num$: 高さが正しくありません",
+                             "placeholders":  {
+                                                  "num":  {
+                                                              "content":  "$1"
+                                                          }
+                                              }
+                         },
+    "alertManualCopy":  {
+                            "message":  "画像の自動抽出に失敗しました。手動でコピー（右クリック -\u003e 「画像をコピー」）し、PhotopeaでCtrl+Vキーを押して貼り付けてください。"
+                        }
 }

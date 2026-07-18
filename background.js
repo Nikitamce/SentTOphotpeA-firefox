@@ -1,265 +1,398 @@
 // ============================================================
 // Send to Photopea — Background Script
-// Manages context menus and opens Photopea with images
+// Context menus, image extraction, Photopea open (hash / bridge)
 // ============================================================
 
-const DEFAULT_PRESETS = [
-  { name: "Full HD",            width: 1920, height: 1080, enabled: true },
-  { name: "Instagram Post",     width: 1080, height: 1080, enabled: true },
-  { name: "Instagram Story",    width: 1080, height: 1920, enabled: true },
-  { name: "A4 (300 DPI)",       width: 2480, height: 3508, enabled: true },
-  { name: "YouTube Thumbnail",  width: 1280, height: 720,  enabled: true }
-];
+// shared/defaults.js + shared/photopea-url.js loaded via manifest background.scripts
 
-// ------ Helpers ------
+var lastImageContext = { srcUrl: null, tabId: null, pageUrl: null };
+
+// ------ Storage helpers ------
 
 function getPresets() {
-  return browser.storage.local.get("presets").then(data => {
-    return data.presets || DEFAULT_PRESETS;
+  return browser.storage.local.get("presets").then(function (data) {
+    return stpNormalizePresets(data.presets);
   });
 }
 
-/**
- * Fetch the image from URL and convert it to a Data URL (base64)
- * to bypass CORS policies when Photopea tries to fetch it.
- * Falls back to in-page extraction (canvas / same-origin fetch) if background fetch fails.
- */
+function getSettings() {
+  return browser.storage.local.get("settings").then(function (data) {
+    return stpNormalizeSettings(data.settings);
+  });
+}
+
+function getRecent() {
+  return browser.storage.local.get("recent").then(function (data) {
+    return Array.isArray(data.recent) ? data.recent : [];
+  });
+}
+
+function pushRecent(entry) {
+  return getRecent().then(function (list) {
+    var next = [{ srcUrl: entry.srcUrl, pageUrl: entry.pageUrl || "", ts: Date.now() }]
+      .concat(list.filter(function (r) { return r.srcUrl !== entry.srcUrl; }))
+      .slice(0, STP.MAX_RECENT);
+    return browser.storage.local.set({ recent: next });
+  });
+}
+
+// ------ Notifications / errors ------
+
+function notifyError(message) {
+  getSettings().then(function (settings) {
+    if (!settings.notifyOnError) return;
+    try {
+      browser.notifications.create({
+        type: "basic",
+        iconUrl: browser.runtime.getURL("icons/icon.svg"),
+        title: browser.i18n.getMessage("extensionName") || "Send to Photopea",
+        message: message
+      });
+    } catch (e) {
+      console.warn("Notification failed:", e);
+    }
+  });
+}
+
+// ------ Image extraction ------
+
+function fetchDataUrlInBackground(imageUrl) {
+  return fetch(imageUrl)
+    .then(function (response) {
+      if (!response.ok) throw new Error("Fetch failed: " + response.status);
+      return response.blob();
+    })
+    .then(function (blob) {
+      return new Promise(function (resolve, reject) {
+        var reader = new FileReader();
+        reader.onloadend = function () { resolve(reader.result); };
+        reader.onerror = function () { reject(reader.error); };
+        reader.readAsDataURL(blob);
+      });
+    });
+}
+
+function ensureExtractScript(tabId) {
+  return browser.tabs.executeScript(tabId, { file: "content/extract-image.js" })
+    .catch(function () { /* already injected or restricted page */ });
+}
+
+function extractViaContentScript(tabId, imageUrl) {
+  return ensureExtractScript(tabId).then(function () {
+    return browser.tabs.sendMessage(tabId, { type: "stp-extract", url: imageUrl });
+  }).then(function (res) {
+    if (res && res.ok && res.dataUrl) return res.dataUrl;
+    throw new Error("content extract failed");
+  });
+}
+
 function getOrFetchDataUrl(imageUrl, tabId) {
-  if (!imageUrl) return Promise.resolve("");
-  if (imageUrl.startsWith("data:") || imageUrl.startsWith("blob:")) {
+  if (!imageUrl) return Promise.reject(new Error("no image url"));
+  if (imageUrl.indexOf("data:") === 0 || imageUrl.indexOf("blob:") === 0) {
     return Promise.resolve(imageUrl);
   }
 
-  // 1. Try background page fetch
-  return fetch(imageUrl)
-    .then(response => {
-      if (!response.ok) throw new Error("Fetch failed: " + response.statusText);
-      return response.blob();
-    })
-    .then(blob => new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(blob);
-    }))
-    .catch(err => {
-      console.warn("Background fetch failed, trying page extraction:", err);
-      if (!tabId) {
-        return Promise.reject(err);
-      }
-
-      // Escape URL for safe injection into code string
-      const escapedUrl = imageUrl.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-      
-      const code = `
-        (function() {
-          try {
-            var img = document.querySelector('img[src="${escapedUrl}"]') || 
-                      Array.from(document.querySelectorAll('img')).find(function(i) { return i.src === "${escapedUrl}"; });
-            if (!img) return Promise.resolve(null);
-
-            // Try drawing to canvas first (instant, works if image loaded and CORS allows)
-            try {
-              var canvas = document.createElement('canvas');
-              canvas.width = img.naturalWidth || img.width || 100;
-              canvas.height = img.naturalHeight || img.height || 100;
-              var ctx = canvas.getContext('2d');
-              ctx.drawImage(img, 0, 0);
-              return Promise.resolve(canvas.toDataURL('image/png'));
-            } catch (canvasErr) {
-              console.warn("Canvas export failed, trying page fetch:", canvasErr);
-            }
-
-            // Try same-origin fetch from page context
-            return fetch(img.src)
-              .then(function(res) {
-                if (!res.ok) throw new Error("Page fetch failed");
-                return res.blob();
-              })
-              .then(function(blob) {
-                return new Promise(function(resolve) {
-                  var reader = new FileReader();
-                  reader.onloadend = function() { resolve(reader.result); };
-                  reader.onerror = function() { resolve(null); };
-                  reader.readAsDataURL(blob);
-                });
-              })
-              .catch(function() {
-                return null;
-              });
-          } catch (e) {
-            console.error("Page extraction error:", e);
-            return Promise.resolve(null);
-          }
-        })();
-      `;
-
-      return browser.tabs.executeScript(tabId, { code: code })
-        .then(results => {
-          if (results && results[0]) {
-            return results[0];
-          }
-          throw new Error("All extraction methods failed");
-        });
+  return fetchDataUrlInBackground(imageUrl)
+    .catch(function (err) {
+      console.warn("Background fetch failed:", err);
+      if (tabId == null) throw err;
+      return extractViaContentScript(tabId, imageUrl);
     });
 }
 
-/**
- * Build the Photopea URL to open an image directly.
- */
-function buildOpenUrl(imageUrl) {
-  const config = { files: [imageUrl] };
-  return "https://www.photopea.com#" + encodeURIComponent(JSON.stringify(config));
+// ------ Open Photopea ------
+
+function waitTabComplete(tabId, timeoutMs) {
+  timeoutMs = timeoutMs || 30000;
+  return new Promise(function (resolve, reject) {
+    var done = false;
+    function finish(ok, val) {
+      if (done) return;
+      done = true;
+      browser.tabs.onUpdated.removeListener(onUpdated);
+      if (ok) resolve(val);
+      else reject(val || new Error("tab timeout"));
+    }
+    function onUpdated(id, info) {
+      if (id === tabId && info.status === "complete") finish(true);
+    }
+    browser.tabs.onUpdated.addListener(onUpdated);
+    browser.tabs.get(tabId).then(function (tab) {
+      if (tab.status === "complete") finish(true);
+    }).catch(function () { /* ignore */ });
+    setTimeout(function () { finish(true); }, timeoutMs);
+  });
 }
 
-/**
- * Build the Photopea URL to place an image onto a new canvas of given dimensions.
- * The script:
- *  1. Waits for the image to load (it's opened via "files")
- *  2. Selects all & copies the image
- *  3. Creates a new blank white document with preset dimensions
- *  4. Pastes the image and centers it
- *  5. Closes the original image document
- */
-function buildCanvasUrl(imageUrl, width, height) {
-  const script = [
-    "var src = app.activeDocument;",
-    "src.selection.selectAll();",
-    "src.activeLayer.copy();",
-    `app.documents.add(${width}, ${height}, 72, "Canvas");`,
-    "app.activeDocument.paste();",
-    "var doc = app.activeDocument;",
-    "var layer = doc.activeLayer;",
-    "var b = layer.bounds;",
-    "var lw = b[2].value - b[0].value;",
-    "var lh = b[3].value - b[1].value;",
-    "var dx = (doc.width.value - lw) / 2 - b[0].value;",
-    "var dy = (doc.height.value - lh) / 2 - b[1].value;",
-    "layer.translate(dx, dy);",
-    "src.close(SaveOptions.DONOTSAVECHANGES);"
-  ].join("\n");
-
-  const config = {
-    files: [imageUrl],
-    script: script
-  };
-  return "https://www.photopea.com#" + encodeURIComponent(JSON.stringify(config));
+function openTab(url, openIn) {
+  if (openIn === "current") {
+    return browser.tabs.query({ active: true, currentWindow: true }).then(function (tabs) {
+      if (tabs[0]) return browser.tabs.update(tabs[0].id, { url: url });
+      return browser.tabs.create({ url: url });
+    });
+  }
+  return browser.tabs.create({ url: url });
 }
 
-// ------ Context Menu Creation ------
+function ensurePhotopeaBridge(tabId) {
+  return browser.tabs.executeScript(tabId, { file: "content/photopea-bridge.js" })
+    .catch(function () { /* may already be registered via content_scripts */ });
+}
 
-function createContextMenus() {
-  browser.contextMenus.removeAll().then(() => {
-    // Parent menu item
-    browser.contextMenus.create({
-      id: "photopea-parent",
-      title: browser.i18n.getMessage("menuParent") || "🎨 Photopea",
-      contexts: ["image"]
-    });
-
-    // Direct open
-    browser.contextMenus.create({
-      id: "photopea-open",
-      parentId: "photopea-parent",
-      title: browser.i18n.getMessage("menuOpen") || "📷 Открыть изображение",
-      contexts: ["image"]
-    });
-
-    // Separator
-    browser.contextMenus.create({
-      id: "photopea-sep",
-      parentId: "photopea-parent",
-      type: "separator",
-      contexts: ["image"]
-    });
-
-    // Preset items
-    getPresets().then(presets => {
-      presets.forEach((preset, i) => {
-        if (preset.enabled) {
-          const menuTitle = browser.i18n.getMessage("menuPreset", [preset.name, String(preset.width), String(preset.height)]) ||
-                            `🖼 На холст: ${preset.name}  (${preset.width}×${preset.height})`;
-          browser.contextMenus.create({
-            id: `photopea-preset-${i}`,
-            parentId: "photopea-parent",
-            title: menuTitle,
-            contexts: ["image"]
+function openViaBridge(payload, openIn) {
+  return openTab(STP.PHOTOPEA_ORIGIN, openIn).then(function (tab) {
+    return waitTabComplete(tab.id).then(function () {
+      return ensurePhotopeaBridge(tab.id).then(function () {
+        // small delay so Photopea JS boots
+        return new Promise(function (r) { setTimeout(r, 600); }).then(function () {
+          return browser.tabs.sendMessage(tab.id, {
+            type: "stp-photopea-run",
+            payload: payload
           });
-        }
+        });
       });
     });
   });
 }
 
-// ------ Event Listeners ------
+function shouldUseHash(dataUrl) {
+  if (!dataUrl) return false;
+  if (dataUrl.indexOf("blob:") === 0) return false;
+  return dataUrl.length < STP.MAX_HASH_DATA_URL_LENGTH;
+}
 
-// Handle context-menu clicks
-browser.contextMenus.onClicked.addListener((info, tab) => {
-  const imageUrl = info.srcUrl;
-  if (!imageUrl) return;
+/**
+ * payload:
+ *  mode: open | canvas | blank
+ *  dataUrl?, width?, height?, dpi?, fill?, fitMode?
+ */
+function openInPhotopea(payload) {
+  return getSettings().then(function (settings) {
+    var fill = payload.fill || settings.canvasFill;
+    var fitMode = payload.fitMode || settings.fitMode;
+    var dpi = payload.dpi || settings.defaultDpi;
+    var openIn = settings.openIn;
+    var merged = Object.assign({}, payload, { fill: fill, fitMode: fitMode, dpi: dpi });
 
-  getOrFetchDataUrl(imageUrl, tab.id)
-    .then(dataUrl => {
-      if (info.menuItemId === "photopea-open") {
-        browser.tabs.create({ url: buildOpenUrl(dataUrl) });
-        return;
+    if (merged.mode === "blank") {
+      var blankUrl = stpBuildBlankUrl(merged.width, merged.height, {
+        dpi: dpi,
+        fill: fill
+      });
+      return openTab(blankUrl, openIn);
+    }
+
+    if (merged.dataUrl && shouldUseHash(merged.dataUrl)) {
+      var url = merged.mode === "open"
+        ? stpBuildOpenUrl(merged.dataUrl)
+        : stpBuildCanvasUrl(merged.dataUrl, merged.width, merged.height, {
+            dpi: dpi,
+            fill: fill,
+            fitMode: fitMode
+          });
+      // Guard against absurd encoded lengths
+      if (url.length < 1.8e6) {
+        return openTab(url, openIn);
+      }
+    }
+
+    // Large images / blob: use bridge
+    return openViaBridge(merged, openIn);
+  });
+}
+
+// ------ Context menus ------
+
+function createContextMenus() {
+  return browser.contextMenus.removeAll().then(function () {
+    browser.contextMenus.create({
+      id: "photopea-parent",
+      title: browser.i18n.getMessage("menuParent") || "🎨 Photopea",
+      contexts: ["image", "video"]
+    });
+
+    browser.contextMenus.create({
+      id: "photopea-open",
+      parentId: "photopea-parent",
+      title: browser.i18n.getMessage("menuOpen") || "📷 Open image",
+      contexts: ["image", "video"]
+    });
+
+    browser.contextMenus.create({
+      id: "photopea-sep",
+      parentId: "photopea-parent",
+      type: "separator",
+      contexts: ["image", "video"]
+    });
+
+    return getPresets().then(function (presets) {
+      presets.forEach(function (preset) {
+        if (!preset.enabled) return;
+        var menuTitle = browser.i18n.getMessage("menuPreset", [
+          preset.icon || "🖼",
+          preset.name,
+          String(preset.width),
+          String(preset.height)
+        ]) || ((preset.icon || "🖼") + " " + preset.name + " (" + preset.width + "×" + preset.height + ")");
+
+        browser.contextMenus.create({
+          id: "photopea-preset-" + preset.id,
+          parentId: "photopea-parent",
+          title: menuTitle,
+          contexts: ["image", "video"]
+        });
+      });
+    });
+  });
+}
+
+function resolveImageUrl(info) {
+  // video poster or image src
+  if (info.mediaType === "video" && info.srcUrl) {
+    // Firefox may give video URL; prefer poster if available (not always in info)
+    return info.srcUrl;
+  }
+  return info.srcUrl || null;
+}
+
+function handleImageAction(menuItemId, imageUrl, tab) {
+  var tabId = tab && tab.id;
+  var pageUrl = tab && tab.url;
+
+  lastImageContext = { srcUrl: imageUrl, tabId: tabId, pageUrl: pageUrl };
+  pushRecent({ srcUrl: imageUrl, pageUrl: pageUrl });
+
+  return getOrFetchDataUrl(imageUrl, tabId)
+    .then(function (dataUrl) {
+      if (menuItemId === "photopea-open" || menuItemId === "command-open") {
+        return openInPhotopea({ mode: "open", dataUrl: dataUrl });
       }
 
-      if (info.menuItemId.startsWith("photopea-preset-")) {
-        const idx = parseInt(info.menuItemId.replace("photopea-preset-", ""), 10);
-        getPresets().then(presets => {
-          const preset = presets[idx];
-          if (preset) {
-            browser.tabs.create({ url: buildCanvasUrl(dataUrl, preset.width, preset.height) });
-          }
+      if (String(menuItemId).indexOf("photopea-preset-") === 0) {
+        var presetId = String(menuItemId).replace("photopea-preset-", "");
+        return getPresets().then(function (presets) {
+          var preset = presets.find(function (p) { return p.id === presetId; });
+          if (!preset) throw new Error("preset not found");
+          return openInPhotopea({
+            mode: "canvas",
+            dataUrl: dataUrl,
+            width: preset.width,
+            height: preset.height,
+            dpi: preset.dpi
+          });
         });
       }
     })
-    .catch(err => {
-      console.error("All image extraction methods failed:", err);
-      
-      // Alert the user about manual copy-paste
-      const alertMsg = browser.i18n.getMessage("alertManualCopy") || 
-                       "Не удалось автоматически извлечь изображение. Пожалуйста, скопируйте его вручную (правый клик -> 'Копировать изображение') и вставьте в Photopea через Ctrl+V.";
-      browser.tabs.executeScript(tab.id, {
-        code: `alert(${JSON.stringify(alertMsg)});`
-      }).catch(e => console.error("Failed to show alert:", e));
+    .catch(function (err) {
+      console.error("Image action failed:", err);
+      var msg = browser.i18n.getMessage("alertManualCopy") ||
+        "Could not extract the image. Copy it manually and paste into Photopea (Ctrl+V).";
+      notifyError(msg);
 
-      // Still open Photopea ready for paste
-      if (info.menuItemId === "photopea-open") {
-        browser.tabs.create({ url: "https://www.photopea.com" });
-      } else if (info.menuItemId.startsWith("photopea-preset-")) {
-        const idx = parseInt(info.menuItemId.replace("photopea-preset-", ""), 10);
-        getPresets().then(presets => {
-          const preset = presets[idx];
-          if (preset) {
-            // Create a blank document of preset size, ready for pasting (no undefined enums)
-            const script = `app.documents.add(${preset.width}, ${preset.height}, 72, "Canvas");`;
-            const config = { script: script };
-            browser.tabs.create({ url: "https://www.photopea.com#" + encodeURIComponent(JSON.stringify(config)) });
-          }
+      // Fallback: open blank Photopea / canvas ready for paste
+      if (menuItemId === "photopea-open" || menuItemId === "command-open") {
+        return openTab(STP.PHOTOPEA_ORIGIN, "newTab");
+      }
+      if (String(menuItemId).indexOf("photopea-preset-") === 0) {
+        var pid = String(menuItemId).replace("photopea-preset-", "");
+        return getPresets().then(function (presets) {
+          var preset = presets.find(function (p) { return p.id === pid; });
+          if (!preset) return;
+          return openInPhotopea({
+            mode: "blank",
+            width: preset.width,
+            height: preset.height,
+            dpi: preset.dpi
+          });
         });
       }
     });
+}
+
+// ------ Events ------
+
+browser.contextMenus.onClicked.addListener(function (info, tab) {
+  var imageUrl = resolveImageUrl(info);
+  if (!imageUrl) return;
+  // Prefer poster for video if src is media stream-ish — still try
+  handleImageAction(info.menuItemId, imageUrl, tab);
 });
 
-// Rebuild menus when extension is installed or updated
-browser.runtime.onInstalled.addListener(() => {
-  // Ensure default presets exist in storage on first install
-  browser.storage.local.get("presets").then(data => {
-    if (!data.presets) {
-      browser.storage.local.set({ presets: DEFAULT_PRESETS });
+if (browser.contextMenus.onShown) {
+  browser.contextMenus.onShown.addListener(function (info, tab) {
+    if (info.srcUrl) {
+      lastImageContext = {
+        srcUrl: info.srcUrl,
+        tabId: tab && tab.id,
+        pageUrl: tab && tab.url
+      };
     }
   });
-  createContextMenus();
+}
+
+browser.runtime.onInstalled.addListener(function () {
+  browser.storage.local.get(["presets", "settings"]).then(function (data) {
+    var updates = {};
+    if (!data.presets) updates.presets = stpCloneDefaultPresets();
+    else updates.presets = stpNormalizePresets(data.presets);
+    if (!data.settings) updates.settings = stpCloneDefaultSettings();
+    else updates.settings = stpNormalizeSettings(data.settings);
+    return browser.storage.local.set(updates);
+  }).then(createContextMenus);
 });
 
-// Rebuild menus when Firefox starts
 createContextMenus();
 
-// Rebuild menus when presets change (from options/popup)
-browser.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && changes.presets) {
+browser.storage.onChanged.addListener(function (changes, area) {
+  if (area === "local" && (changes.presets || changes.settings)) {
     createContextMenus();
+  }
+});
+
+// Keyboard command: open last known image
+browser.commands.onCommand.addListener(function (command) {
+  if (command !== "open-in-photopea") return;
+
+  var src = lastImageContext.srcUrl;
+  var tabId = lastImageContext.tabId;
+
+  if (!src) {
+    // Try active tab: no specific image — open Photopea home
+    notifyError(browser.i18n.getMessage("notifyNoImage") ||
+      "No image yet. Right‑click an image first, then use the shortcut.");
+    openTab(STP.PHOTOPEA_ORIGIN, "newTab");
+    return;
+  }
+
+  browser.tabs.get(tabId).then(function (tab) {
+    handleImageAction("command-open", src, tab);
+  }).catch(function () {
+    handleImageAction("command-open", src, { id: tabId, url: lastImageContext.pageUrl });
+  });
+});
+
+// Messages from popup / options
+browser.runtime.onMessage.addListener(function (msg) {
+  if (!msg || !msg.type) return;
+
+  if (msg.type === "stp-open-blank-preset") {
+    return openInPhotopea({
+      mode: "blank",
+      width: msg.width,
+      height: msg.height,
+      dpi: msg.dpi
+    });
+  }
+
+  if (msg.type === "stp-open-recent") {
+    var tabId = lastImageContext.tabId;
+    return browser.tabs.query({ active: true, currentWindow: true }).then(function (tabs) {
+      var tab = tabs[0] || { id: tabId };
+      return handleImageAction("photopea-open", msg.srcUrl, tab);
+    });
+  }
+
+  if (msg.type === "stp-get-version") {
+    return Promise.resolve({ version: STP.VERSION });
   }
 });

@@ -1,120 +1,94 @@
-{
-  "extensionName": {
-    "message": "An Photopea senden"
-  },
-  "extensionDescription": {
-    "message": "Senden Sie Bilder aus dem Kontextmenü an Photopea – direkt öffnen oder auf eine benutzerdefinierte Leinwand einfügen"
-  },
-  "menuParent": {
-    "message": "🎨 Photopea"
-  },
-  "menuOpen": {
-    "message": "📷 Bild öffnen"
-  },
-  "menuPreset": {
-    "message": "🖼 Auf Leinwand: $name$ ($width$×$height$)",
-    "placeholders": {
-      "name": {
-        "content": "$1"
-      },
-      "width": {
-        "content": "$2"
-      },
-      "height": {
-        "content": "$3"
-      }
-    }
-  },
-  "popupSubtitle": {
-    "message": "Rechtsklick auf das Bild → 🎨 Photopea"
-  },
-  "presetsHeading": {
-    "message": "Leinwand-Voreinstellungen"
-  },
-  "btnSettings": {
-    "message": "Einstellungen"
-  },
-  "emptyPresets": {
-    "message": "Keine aktiven Voreinstellungen. Öffnen Sie die Einstellungen zum Hinzufügen."
-  },
-  "statusActive": {
-    "message": "Aktiv"
-  },
-  "statusDisabled": {
-    "message": "Deaktiviert"
-  },
-  "optionsTitle": {
-    "message": "An Photopea senden — Einstellungen"
-  },
-  "optionsHeaderSubtitle": {
-    "message": "v1.0.0 — Erweiterungseinstellungen"
-  },
-  "optionsSectionHeading": {
-    "message": "Leinwand-Voreinstellungen"
-  },
-  "optionsSectionDesc": {
-    "message": "Konfigurieren Sie bis zu 5 Voreinstellungen für die Leinwandgröße. Aktive Voreinstellungen werden beim Rechtsklick im Kontextmenü angezeigt."
-  },
-  "btnSave": {
-    "message": "Speichern"
-  },
-  "btnReset": {
-    "message": "Auf Standard zurücksetzen"
-  },
-  "footerText": {
-    "message": "Rechtsklick auf ein beliebiges Bild → 🎨 Photopea"
-  },
-  "presetNum": {
-    "message": "Voreinstellung $num$",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "labelName": {
-    "message": "Name"
-  },
-  "placeholderName": {
-    "message": "Name der Voreinstellung"
-  },
-  "labelWidth": {
-    "message": "Breite"
-  },
-  "labelHeight": {
-    "message": "Höhe"
-  },
-  "toastSaveSuccess": {
-    "message": "✓ Einstellungen gespeichert!"
-  },
-  "toastReset": {
-    "message": "↩ Voreinstellungen auf Standard zurückgesetzt"
-  },
-  "errEnterName": {
-    "message": "Voreinstellung $num$: Name eingeben",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "errInvalidWidth": {
-    "message": "Voreinstellung $num$: ungültige Breite",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "errInvalidHeight": {
-    "message": "Voreinstellung $num$: ungültige Höhe",
-    "placeholders": {
-      "num": {
-        "content": "$1"
-      }
-    }
-  },
-  "alertManualCopy": {
-    "message": "Das Bild konnte nicht automatisch extrahiert werden. Bitte kopieren Sie es manuell (Rechtsklick -> 'Bild kopieren') und fügen Sie es mit Strg+V in Photopea ein."
-  }
+﻿{
+    "extensionName":  {
+                          "message":  "An Photopea senden"
+                      },
+    "menuParent":  {
+                       "message":  "🎨 Photopea"
+                   },
+    "menuOpen":  {
+                     "message":  "📷 Bild öffnen"
+                 },
+    "popupSubtitle":  {
+                          "message":  "Rechtsklick auf das Bild → 🎨 Photopea"
+                      },
+    "presetsHeading":  {
+                           "message":  "Leinwand-Voreinstellungen"
+                       },
+    "btnSettings":  {
+                        "message":  "Einstellungen"
+                    },
+    "emptyPresets":  {
+                         "message":  "Keine aktiven Voreinstellungen. Öffnen Sie die Einstellungen zum Hinzufügen."
+                     },
+    "statusActive":  {
+                         "message":  "Aktiv"
+                     },
+    "statusDisabled":  {
+                           "message":  "Deaktiviert"
+                       },
+    "optionsTitle":  {
+                         "message":  "An Photopea senden — Einstellungen"
+                     },
+    "optionsSectionHeading":  {
+                                  "message":  "Leinwand-Voreinstellungen"
+                              },
+    "btnSave":  {
+                    "message":  "Speichern"
+                },
+    "btnReset":  {
+                     "message":  "Auf Standard zurücksetzen"
+                 },
+    "presetNum":  {
+                      "message":  "Voreinstellung $num$",
+                      "placeholders":  {
+                                           "num":  {
+                                                       "content":  "$1"
+                                                   }
+                                       }
+                  },
+    "labelName":  {
+                      "message":  "Name"
+                  },
+    "placeholderName":  {
+                            "message":  "Name der Voreinstellung"
+                        },
+    "labelWidth":  {
+                       "message":  "Breite"
+                   },
+    "labelHeight":  {
+                        "message":  "Höhe"
+                    },
+    "toastSaveSuccess":  {
+                             "message":  "✓ Einstellungen gespeichert!"
+                         },
+    "toastReset":  {
+                       "message":  "↩ Voreinstellungen auf Standard zurückgesetzt"
+                   },
+    "errEnterName":  {
+                         "message":  "Voreinstellung $num$: Name eingeben",
+                         "placeholders":  {
+                                              "num":  {
+                                                          "content":  "$1"
+                                                      }
+                                          }
+                     },
+    "errInvalidWidth":  {
+                            "message":  "Voreinstellung $num$: ungültige Breite",
+                            "placeholders":  {
+                                                 "num":  {
+                                                             "content":  "$1"
+                                                         }
+                                             }
+                        },
+    "errInvalidHeight":  {
+                             "message":  "Voreinstellung $num$: ungültige Höhe",
+                             "placeholders":  {
+                                                  "num":  {
+                                                              "content":  "$1"
+                                                          }
+                                              }
+                         },
+    "alertManualCopy":  {
+                            "message":  "Das Bild konnte nicht automatisch extrahiert werden. Bitte kopieren Sie es manuell (Rechtsklick -\u003e \u0027Bild kopieren\u0027) und fügen Sie es mit Strg+V in Photopea ein."
+                        }
 }

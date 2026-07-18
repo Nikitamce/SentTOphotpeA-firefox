@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
   "default_locale": "en",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "__MSG_extensionDescription__",
   "author": "Nikita",
 
@@ -15,13 +15,15 @@
     "contextMenus",
     "storage",
     "activeTab",
+    "notifications",
+    "tabs",
     "<all_urls>"
   ],
 
   "browser_specific_settings": {
     "gecko": {
       "id": "send-to-photopea@nikita.dev",
-      "strict_min_version": "142.0",
+      "strict_min_version": "115.0",
       "data_collection_permissions": {
         "required": ["none"]
       }
@@ -29,7 +31,11 @@
   },
 
   "background": {
-    "scripts": ["background.js"]
+    "scripts": [
+      "shared/defaults.js",
+      "shared/photopea-url.js",
+      "background.js"
+    ]
   },
 
   "browser_action": {
@@ -37,12 +43,30 @@
       "48": "icons/icon.svg",
       "96": "icons/icon.svg"
     },
-    "default_title": "Send to Photopea",
+    "default_title": "__MSG_extensionName__",
     "default_popup": "popup/popup.html"
   },
 
   "options_ui": {
     "page": "options/options.html",
     "open_in_tab": true
-  }
+  },
+
+  "commands": {
+    "open-in-photopea": {
+      "suggested_key": {
+        "default": "Alt+Shift+P",
+        "mac": "Alt+Shift+P"
+      },
+      "description": "__MSG_commandOpenDescription__"
+    }
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://www.photopea.com/*", "https://photopea.com/*"],
+      "js": ["content/photopea-bridge.js"],
+      "run_at": "document_idle"
+    }
+  ]
 }
