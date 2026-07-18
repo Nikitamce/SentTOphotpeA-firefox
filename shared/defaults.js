@@ -3,7 +3,7 @@
 // ============================================================
 
 var STP = {
-  VERSION: "1.1.6",
+  VERSION: "1.1.7",
   MAX_PRESETS: 15,
   MAX_RECENT: 8,
   /** Data URLs longer than this go through Photopea bridge (not URL hash). */

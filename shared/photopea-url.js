@@ -1,12 +1,8 @@
 // ============================================================
 // Build Photopea hash URLs + canvas placement scripts
+// Photopea API extras: app.UI.fitTheArea(), layer.translate(), etc.
+// https://www.photopea.com/learn/scripts
 // ============================================================
-
-function stpFillEnum(fill) {
-  if (fill === "transparent") return '"TRANSPARENT"';
-  if (fill === "black") return '"BLACK"';
-  return '"WHITE"';
-}
 
 function stpBlackFillScript(fill) {
   if (fill !== "black") return "";
@@ -41,69 +37,103 @@ function stpSetBackgroundScript(fill) {
   ].join("\n");
 }
 
+/** Coerce Photopea/PS UnitValue or number to a plain number */
+function stpNumHelperJs() {
+  return [
+    "function __stpN(v) {",
+    "  if (v == null) return 0;",
+    "  if (typeof v === 'number' && isFinite(v)) return v;",
+    "  if (typeof v === 'object') {",
+    "    if (typeof v.value === 'number') return v.value;",
+    "    if (typeof v.as === 'function') { try { return v.as('px'); } catch(e) {} }",
+    "  }",
+    "  var p = parseFloat(v);",
+    "  return isFinite(p) ? p : 0;",
+    "}"
+  ].join("\n");
+}
+
 /**
- * Unlock active layer (Background cannot be translated in PS/Photopea).
+ * Get active/current layer (Photopea uses both names in places).
+ */
+function stpGetLayerHelperJs() {
+  return [
+    "function __stpLayer(doc) {",
+    "  try { if (doc.currentLayer) return doc.currentLayer; } catch(e) {}",
+    "  try { if (doc.activeLayer) return doc.activeLayer; } catch(e) {}",
+    "  try { if (doc.layers && doc.layers.length) return doc.layers[0]; } catch(e) {}",
+    "  return null;",
+    "}"
+  ].join("\n");
+}
+
+/**
+ * Unlock layer so translate works (Background is locked).
  */
 function stpUnlockLayerScript() {
   return [
     "try {",
-    "  var __L = app.activeDocument.activeLayer;",
-    "  try { if (__L.isBackgroundLayer) __L.isBackgroundLayer = false; } catch (__u1) {}",
-    "  try { __L.allLocked = false; } catch (__u2) {}",
-    "  try { __L.positionLocked = false; } catch (__u3) {}",
+    "  var __docU = app.activeDocument;",
+    "  var __L = __stpLayer(__docU);",
+    "  if (__L) {",
+    "    try { if (__L.isBackgroundLayer) __L.isBackgroundLayer = false; } catch (__u1) {}",
+    "    try { __L.allLocked = false; } catch (__u2) {}",
+    "    try { __L.positionLocked = false; } catch (__u3) {}",
+    "    try { __L.transparentPixelsLocked = false; } catch (__u4) {}",
+    "  }",
     "} catch (__u) {}"
   ].join("\n");
 }
 
 /**
- * Center the active layer on the document canvas.
+ * Center active layer on the document.
  */
 function stpCenterLayerScript() {
   return [
     stpUnlockLayerScript(),
     "try {",
     "  var __doc = app.activeDocument;",
-    "  var __layer = __doc.activeLayer;",
-    "  var __b = __layer.bounds;",
-    "  var __lw = __b[2].value - __b[0].value;",
-    "  var __lh = __b[3].value - __b[1].value;",
-    "  var __dx = (__doc.width.value - __lw) / 2 - __b[0].value;",
-    "  var __dy = (__doc.height.value - __lh) / 2 - __b[1].value;",
-    "  if (Math.abs(__dx) > 0.01 || Math.abs(__dy) > 0.01) {",
-    "    __layer.translate(__dx, __dy);",
+    "  var __layer = __stpLayer(__doc);",
+    "  if (__layer) {",
+    "    var __b = __layer.bounds;",
+    "    var __left = __stpN(__b[0]);",
+    "    var __top = __stpN(__b[1]);",
+    "    var __right = __stpN(__b[2]);",
+    "    var __bottom = __stpN(__b[3]);",
+    "    var __lw = __right - __left;",
+    "    var __lh = __bottom - __top;",
+    "    var __dw = __stpN(__doc.width);",
+    "    var __dh = __stpN(__doc.height);",
+    "    var __dx = (__dw - __lw) / 2 - __left;",
+    "    var __dy = (__dh - __lh) / 2 - __top;",
+    "    if (Math.abs(__dx) > 0.5 || Math.abs(__dy) > 0.5) {",
+    "      __layer.translate(__dx, __dy);",
+    "    }",
     "  }",
     "} catch (__ce) {}"
   ].join("\n");
 }
 
 /**
- * Zoom the view so the whole canvas fits on screen (View → Fit on Screen).
+ * Fit the whole canvas into the Photopea viewport.
+ * Official API: app.UI.fitTheArea() — https://www.photopea.com/learn/scripts
  */
 function stpFitViewScript() {
   return [
+    "try { app.UI.fitTheArea(); } catch (__fv0) {}",
+    "try { app.UI.fitTheArea(); } catch (__fv1) {}",
     "try {",
     "  if (typeof app.runMenuItem === 'function') {",
-    "    var __fitOk = false;",
-    "    try { app.runMenuItem(stringIDToTypeID('fitOnScreen')); __fitOk = true; } catch (__f1) {}",
-    "    if (!__fitOk) { try { app.runMenuItem(charIDToTypeID('FtOn')); __fitOk = true; } catch (__f2) {} }",
-    "    if (!__fitOk) { try { app.runMenuItem(stringIDToTypeID('fiton')); } catch (__f3) {} }",
+    "    try { app.runMenuItem(stringIDToTypeID('fitOnScreen')); } catch (__f1) {}",
+    "    try { app.runMenuItem(charIDToTypeID('FtOn')); } catch (__f2) {}",
     "  }",
-    "} catch (__fv1) {}",
-    // Extra fall-backs used by some Photopea builds
-    "try { if (app.activeDocument.activeView) app.activeDocument.activeView.zoomToFit(); } catch (__fv2) {}",
-    "try { if (typeof app.activeDocument.setZoom === 'function') app.activeDocument.setZoom('fit'); } catch (__fv3) {}"
+    "} catch (__fv2) {}"
   ].join("\n");
 }
 
 /**
  * Place the already-open image onto a target canvas size.
- * Always centers the layer and fits the view to the screen.
- *
- * fitMode:
- *  - center  : keep pixel size, expand/crop canvas, center image
- *  - fit     : scale to fit inside target, center
- *  - fill    : scale to cover target, center (may crop)
- *  - stretch : force exact target size
+ * Centers the layer and fits the view (app.UI.fitTheArea).
  */
 function stpBuildCanvasPlaceScript(width, height, options) {
   options = options || {};
@@ -113,6 +143,8 @@ function stpBuildCanvasPlaceScript(width, height, options) {
   var h = Math.max(1, parseInt(height, 10) || 1080);
 
   var parts = [];
+  parts.push(stpNumHelperJs());
+  parts.push(stpGetLayerHelperJs());
   parts.push("if (app.documents.length < 1) { throw 'STP: no document'; }");
   parts.push("var doc = app.activeDocument;");
   parts.push("var tw = " + w + ";");
@@ -122,39 +154,49 @@ function stpBuildCanvasPlaceScript(width, height, options) {
 
   if (fitMode === "stretch") {
     parts.push("doc.resizeImage(tw, th);");
-    parts.push("try { doc.resizeCanvas(tw, th, 'middlecenter'); } catch(__r1) { doc.resizeCanvas(tw, th); }");
+    parts.push("try { doc.resizeCanvas(tw, th, AnchorPosition.MIDDLECENTER); } catch(__r1) {");
+    parts.push("  try { doc.resizeCanvas(tw, th, 'middlecenter'); } catch(__r1b) { doc.resizeCanvas(tw, th); }");
+    parts.push("}");
   } else if (fitMode === "fit") {
-    parts.push("var dw = doc.width.value;");
-    parts.push("var dh = doc.height.value;");
+    parts.push("var dw = __stpN(doc.width);");
+    parts.push("var dh = __stpN(doc.height);");
     parts.push("var s = Math.min(tw / Math.max(1, dw), th / Math.max(1, dh));");
     parts.push("doc.resizeImage(Math.max(1, Math.round(dw * s)), Math.max(1, Math.round(dh * s)));");
-    parts.push("try { doc.resizeCanvas(tw, th, 'middlecenter'); } catch(__r2) { doc.resizeCanvas(tw, th); }");
+    parts.push("try { doc.resizeCanvas(tw, th, AnchorPosition.MIDDLECENTER); } catch(__r2) {");
+    parts.push("  try { doc.resizeCanvas(tw, th, 'middlecenter'); } catch(__r2b) { doc.resizeCanvas(tw, th); }");
+    parts.push("}");
   } else if (fitMode === "fill") {
-    parts.push("var dw = doc.width.value;");
-    parts.push("var dh = doc.height.value;");
+    parts.push("var dw = __stpN(doc.width);");
+    parts.push("var dh = __stpN(doc.height);");
     parts.push("var s = Math.max(tw / Math.max(1, dw), th / Math.max(1, dh));");
     parts.push("doc.resizeImage(Math.max(1, Math.round(dw * s)), Math.max(1, Math.round(dh * s)));");
-    parts.push("try { doc.resizeCanvas(tw, th, 'middlecenter'); } catch(__r3) { doc.resizeCanvas(tw, th); }");
+    parts.push("try { doc.resizeCanvas(tw, th, AnchorPosition.MIDDLECENTER); } catch(__r3) {");
+    parts.push("  try { doc.resizeCanvas(tw, th, 'middlecenter'); } catch(__r3b) { doc.resizeCanvas(tw, th); }");
+    parts.push("}");
   } else {
-    // center: keep image pixels, change canvas size
-    parts.push("try { doc.resizeCanvas(tw, th, 'middlecenter'); } catch(__r4) { doc.resizeCanvas(tw, th); }");
+    // center: keep image pixels, expand/crop canvas around center
+    parts.push("try { doc.resizeCanvas(tw, th, AnchorPosition.MIDDLECENTER); } catch(__r4) {");
+    parts.push("  try { doc.resizeCanvas(tw, th, 'middlecenter'); } catch(__r4b) { doc.resizeCanvas(tw, th); }");
+    parts.push("}");
   }
 
-  // Always re-center layer (middlecenter can fail / leave Background top-left)
+  // Explicit center (works even if anchor ignored)
+  parts.push(stpCenterLayerScript());
+  // Run center twice — bounds sometimes update after first translate
   parts.push(stpCenterLayerScript());
 
   if (fillMode === "transparent") {
-    parts.push("try { doc.activeLayer.isBackgroundLayer = false; } catch (__e2) {}");
+    parts.push("try { var __lt = __stpLayer(doc); if (__lt) __lt.isBackgroundLayer = false; } catch (__e2) {}");
   }
 
-  // Zoom view to show the whole canvas
+  // Official Photopea view fit
   parts.push(stpFitViewScript());
 
   return parts.filter(Boolean).join("\n");
 }
 
 /**
- * Copy/paste backup: new document of exact size, paste, center, fit view.
+ * Copy/paste backup: new document, paste, center, fit view.
  */
 function stpBuildCanvasCopyPasteScript(width, height, options) {
   options = options || {};
@@ -168,49 +210,44 @@ function stpBuildCanvasCopyPasteScript(width, height, options) {
   if (fitMode === "stretch") {
     scaleBlock = [
       "var doc = app.activeDocument;",
-      "var layer = doc.activeLayer;",
+      "var layer = __stpLayer(doc);",
       "var b = layer.bounds;",
-      "var lw = Math.max(1, b[2].value - b[0].value);",
-      "var lh = Math.max(1, b[3].value - b[1].value);",
-      "layer.resize(doc.width.value / lw * 100, doc.height.value / lh * 100);",
+      "var lw = Math.max(1, __stpN(b[2]) - __stpN(b[0]));",
+      "var lh = Math.max(1, __stpN(b[3]) - __stpN(b[1]));",
+      "layer.resize(__stpN(doc.width) / lw * 100, __stpN(doc.height) / lh * 100);",
       "b = layer.bounds;",
-      "layer.translate(-b[0].value, -b[1].value);"
+      "layer.translate(-__stpN(b[0]), -__stpN(b[1]));"
     ].join("\n");
   } else if (fitMode === "fill" || fitMode === "fit") {
     var useMax = fitMode === "fill";
     scaleBlock = [
       "var doc = app.activeDocument;",
-      "var layer = doc.activeLayer;",
+      "var layer = __stpLayer(doc);",
       "var b = layer.bounds;",
-      "var lw = Math.max(1, b[2].value - b[0].value);",
-      "var lh = Math.max(1, b[3].value - b[1].value);",
-      "var sx = doc.width.value / lw;",
-      "var sy = doc.height.value / lh;",
+      "var lw = Math.max(1, __stpN(b[2]) - __stpN(b[0]));",
+      "var lh = Math.max(1, __stpN(b[3]) - __stpN(b[1]));",
+      "var sx = __stpN(doc.width) / lw;",
+      "var sy = __stpN(doc.height) / lh;",
       "var s = (" + (useMax ? "Math.max" : "Math.min") + "(sx, sy)) * 100;",
       "layer.resize(s, s);",
       "b = layer.bounds;",
-      "lw = b[2].value - b[0].value;",
-      "lh = b[3].value - b[1].value;",
-      "layer.translate((doc.width.value - lw) / 2 - b[0].value, (doc.height.value - lh) / 2 - b[1].value);"
+      "lw = __stpN(b[2]) - __stpN(b[0]);",
+      "lh = __stpN(b[3]) - __stpN(b[1]);",
+      "layer.translate((__stpN(doc.width) - lw) / 2 - __stpN(b[0]), (__stpN(doc.height) - lh) / 2 - __stpN(b[1]));"
     ].join("\n");
   } else {
-    scaleBlock = [
-      "var doc = app.activeDocument;",
-      "var layer = doc.activeLayer;",
-      "var b = layer.bounds;",
-      "var lw = b[2].value - b[0].value;",
-      "var lh = b[3].value - b[1].value;",
-      "layer.translate((doc.width.value - lw) / 2 - b[0].value, (doc.height.value - lh) / 2 - b[1].value);"
-    ].join("\n");
+    scaleBlock = stpCenterLayerScript();
   }
 
   return [
+    stpNumHelperJs(),
+    stpGetLayerHelperJs(),
     "if (app.documents.length < 1) { throw 'STP: no document'; }",
     "var src = app.activeDocument;",
     "try { src.flatten(); } catch (__f) {}",
     stpUnlockLayerScript(),
     "src.selection.selectAll();",
-    "try { src.selection.copy(); } catch (__c1) { try { src.activeLayer.copy(); } catch (__c2) {} }",
+    "try { src.selection.copy(); } catch (__c1) { try { __stpLayer(src).copy(); } catch (__c2) {} }",
     "app.documents.add(" + w + ", " + h + ", " + dpi + ", 'Canvas');",
     stpBlackFillScript(fillMode),
     "app.activeDocument.paste();",
@@ -245,6 +282,7 @@ function stpBuildBlankUrl(width, height, options) {
   var w = Math.max(1, parseInt(width, 10) || 1920);
   var h = Math.max(1, parseInt(height, 10) || 1080);
   var script = [
+    stpNumHelperJs(),
     "app.documents.add(" + w + ", " + h + ", " + dpi + ", 'Canvas');",
     options.fill === "black" ? stpBlackFillScript("black") : "",
     stpFitViewScript()
