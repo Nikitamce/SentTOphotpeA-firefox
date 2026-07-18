@@ -21,7 +21,9 @@ Firefox extension: right‑click any image (or video) → open it in [Photopea](
 - **Popup**: open Photopea, blank canvas per preset, recent images
 - **Shortcut:** `Alt+Shift+P` — open last right‑clicked image
 - Notifications when extraction fails (optional)
-- Locales: `en`, `ru` (others fall back to English)
+- **Locales (top world languages + extras):**  
+  `en`, `zh_CN`, `hi`, `es`, `fr`, `ar`, `bn`, `pt_BR`, `ru`, `ur`  
+  plus: `de`, `it`, `ja`, `ko`, `tr`
 - Optional folder `firefox-customization/` — **not** part of the WebExtension (userChrome helpers)
 
 ---

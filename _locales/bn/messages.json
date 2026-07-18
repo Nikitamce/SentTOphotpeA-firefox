@@ -1,0 +1,90 @@
+{
+  "extensionName": { "message": "Send to Photopea" },
+  "extensionDescription": { "message": "কনটেক্সট মেনু থেকে ছবি Photopea-তে পাঠান — যেমন আছে খুলুন বা কাস্টম ক্যানভাসে ফিট মোড ও প্রিসেটসহ রাখুন।" },
+  "menuParent": { "message": "🎨 Photopea" },
+  "menuOpen": { "message": "📷 ছবি খুলুন" },
+  "menuPreset": {
+    "message": "$icon$ ক্যানভাসে: $name$ ($width$×$height$)",
+    "placeholders": {
+      "icon": { "content": "$1" },
+      "name": { "content": "$2" },
+      "width": { "content": "$3" },
+      "height": { "content": "$4" }
+    }
+  },
+  "popupSubtitle": { "message": "ছবিতে রাইট‑ক্লিক → 🎨 Photopea" },
+  "presetsHeading": { "message": "ক্যানভাস প্রিসেট" },
+  "recentHeading": { "message": "সাম্প্রতিক ছবি" },
+  "btnSettings": { "message": "সেটিংস" },
+  "btnOpenPhotopea": { "message": "Photopea খুলুন" },
+  "popupOpenBlank": { "message": "ফাঁকা" },
+  "popupPresetHint": { "message": "Photopea-তে এই আকারের ফাঁকা ক্যানভাস খুলুন" },
+  "popupShortcutHint": { "message": "শর্টকাট: Alt+Shift+P (শেষ ছবি)" },
+  "recentDataImage": { "message": "এম্বেডেড ছবি" },
+  "emptyPresets": { "message": "কোনো সক্রিয় প্রিসেট নেই। যোগ করতে সেটিংস খুলুন।" },
+  "statusActive": { "message": "সক্রিয়" },
+  "statusDisabled": { "message": "বন্ধ" },
+  "optionsTitle": { "message": "Send to Photopea — সেটিংস" },
+  "optionsHeaderSubtitle": { "message": "এক্সটেনশন সেটিংস" },
+  "optionsHeaderSubtitleShort": { "message": "এক্সটেনশন সেটিংস" },
+  "optionsSectionHeading": { "message": "ক্যানভাস প্রিসেট" },
+  "optionsSectionDesc": { "message": "সক্রিয় প্রিসেট ছবিতে রাইট‑ক্লিক করলে মেনুতে দেখা যায়। সর্বোচ্চ ১৫টি।" },
+  "settingsSectionHeading": { "message": "সাধারণ" },
+  "settingsSectionDesc": { "message": "Photopea কীভাবে খুলবে এবং ছবি ক্যানভাসে কীভাবে বসবে।" },
+  "labelOpenIn": { "message": "খুলুন" },
+  "optNewTab": { "message": "নতুন ট্যাবে" },
+  "optCurrentTab": { "message": "বর্তমান ট্যাবে" },
+  "labelFitMode": { "message": "ছবির অবস্থান" },
+  "optFitCenter": { "message": "কেন্দ্র (মূল আকার)" },
+  "optFitContain": { "message": "ক্যানভাসের ভিতরে ফিট" },
+  "optFitCover": { "message": "ক্যানভাস ভর্তি (ক্রপ)" },
+  "optFitStretch": { "message": "ক্যানভাস পর্যন্ত টানুন" },
+  "labelCanvasFill": { "message": "ক্যানভাস পটভূমি" },
+  "optFillWhite": { "message": "সাদা" },
+  "optFillTransparent": { "message": "স্বচ্ছ" },
+  "optFillBlack": { "message": "কালো" },
+  "labelDefaultDpi": { "message": "ডিফল্ট DPI" },
+  "labelNotifyOnError": { "message": "ছবি বের করতে ব্যর্থ হলে বিজ্ঞপ্তি দেখান" },
+  "shortcutHint": { "message": "কীবোর্ড শর্টকাট: Alt+Shift+P শেষ রাইট‑ক্লিক ছবি খোলে (about:addons → গিয়ার → Manage Extension Shortcuts)।" },
+  "permissionHint": { "message": "«সব ওয়েবসাইটের ডেটা অ্যাক্সেস» শুধু hotlink (CORS) ব্লক করা ছবি ডাউনলোড করে Photopea-তে খোলার জন্য।" },
+  "btnSave": { "message": "সংরক্ষণ" },
+  "btnReset": { "message": "ডিফল্টে রিসেট" },
+  "btnAddPreset": { "message": "+ প্রিসেট যোগ" },
+  "btnRemovePreset": { "message": "প্রিসেট মুছুন" },
+  "newPresetName": { "message": "নতুন প্রিসেট" },
+  "footerText": { "message": "যেকোনো ছবিতে রাইট‑ক্লিক → 🎨 Photopea" },
+  "presetNum": {
+    "message": "প্রিসেট $num$",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "labelName": { "message": "নাম" },
+  "labelIcon": { "message": "আইকন" },
+  "placeholderName": { "message": "প্রিসেটের নাম" },
+  "labelWidth": { "message": "প্রস্থ" },
+  "labelHeight": { "message": "উচ্চতা" },
+  "labelDpi": { "message": "DPI" },
+  "toastSaveSuccess": { "message": "✓ সেটিংস সংরক্ষিত!" },
+  "toastReset": { "message": "↩ প্রিসেট ও সেটিংস ডিফল্টে" },
+  "errEnterName": {
+    "message": "প্রিসেট $num$: নাম লিখুন",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidWidth": {
+    "message": "প্রিসেট $num$: অবৈধ প্রস্থ",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidHeight": {
+    "message": "প্রিসেট $num$: অবৈধ উচ্চতা",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidDpi": {
+    "message": "প্রিসেট $num$: অবৈধ DPI",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errMinPresets": { "message": "অন্তত একটি প্রিসেট রাখুন" },
+  "alertManualCopy": { "message": "ছবি স্বয়ংক্রিয়ভাবে নেওয়া যায়নি। ম্যানুয়ালি কপি করুন (রাইট‑ক্লিক → Copy Image) এবং Photopea-তে Ctrl+V দিয়ে পেস্ট করুন।" },
+  "notifyNoImage": { "message": "এখনো কোনো ছবি নেই। আগে ছবিতে রাইট‑ক্লিক করুন, তারপর শর্টকাট।" },
+  "commandOpenDescription": { "message": "শেষ ছবি Photopea-তে খুলুন" },
+  "alertImageTooLargeCanvas": { "message": "ছবি ক্যানভাস URL-এর জন্য খুব বড় — যেমন আছে খোলা হয়েছে। প্রয়োজনে Photopea-তে Image Size।" },
+  "alertCanvasPlaceFailed": { "message": "ছবি Photopea-তে খুলেছে, কিন্তু ক্যানভাসে অটো-রাখা ব্যর্থ। নতুন ডকুমেন্টে কপি/পেস্ট করতে পারেন।" }
+}

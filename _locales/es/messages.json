@@ -1,94 +1,90 @@
-﻿{
-    "extensionName":  {
-                          "message":  "Enviar a Photopea"
-                      },
-    "menuParent":  {
-                       "message":  "🎨 Photopea"
-                   },
-    "menuOpen":  {
-                     "message":  "📷 Abrir imagen"
-                 },
-    "popupSubtitle":  {
-                          "message":  "Clic derecho en la imagen → 🎨 Photopea"
-                      },
-    "presetsHeading":  {
-                           "message":  "Ajustes preestablecidos"
-                       },
-    "btnSettings":  {
-                        "message":  "Configuración"
-                    },
-    "emptyPresets":  {
-                         "message":  "No hay ajustes activos. Abre la configuración para añadir."
-                     },
-    "statusActive":  {
-                         "message":  "Activo"
-                     },
-    "statusDisabled":  {
-                           "message":  "Desactivado"
-                       },
-    "optionsTitle":  {
-                         "message":  "Enviar a Photopea — Configuración"
-                     },
-    "optionsSectionHeading":  {
-                                  "message":  "Ajustes preestablecidos"
-                              },
-    "btnSave":  {
-                    "message":  "Guardar"
-                },
-    "btnReset":  {
-                     "message":  "Restablecer valores"
-                 },
-    "presetNum":  {
-                      "message":  "Ajuste $num$",
-                      "placeholders":  {
-                                           "num":  {
-                                                       "content":  "$1"
-                                                   }
-                                       }
-                  },
-    "labelName":  {
-                      "message":  "Nombre"
-                  },
-    "placeholderName":  {
-                            "message":  "Nombre del ajuste"
-                        },
-    "labelWidth":  {
-                       "message":  "Ancho"
-                   },
-    "labelHeight":  {
-                        "message":  "Alto"
-                    },
-    "toastSaveSuccess":  {
-                             "message":  "✓ ¡Configuración guardada!"
-                         },
-    "toastReset":  {
-                       "message":  "↩ Ajustes restablecidos por defecto"
-                   },
-    "errEnterName":  {
-                         "message":  "Ajuste $num$: ingresa un nombre",
-                         "placeholders":  {
-                                              "num":  {
-                                                          "content":  "$1"
-                                                      }
-                                          }
-                     },
-    "errInvalidWidth":  {
-                            "message":  "Ajuste $num$: ancho inválido",
-                            "placeholders":  {
-                                                 "num":  {
-                                                             "content":  "$1"
-                                                         }
-                                             }
-                        },
-    "errInvalidHeight":  {
-                             "message":  "Ajuste $num$: alto inválido",
-                             "placeholders":  {
-                                                  "num":  {
-                                                              "content":  "$1"
-                                                          }
-                                              }
-                         },
-    "alertManualCopy":  {
-                            "message":  "No se pudo extraer la imagen automáticamente. Cópiala manualmente (clic derecho -\u003e \u0027Copiar imagen\u0027) y pégala en Photopea con Ctrl+V."
-                        }
+{
+  "extensionName": { "message": "Send to Photopea" },
+  "extensionDescription": { "message": "Envía imágenes a Photopea desde el menú contextual: ábrelas tal cual o colócalas en un lienzo personalizado con modos de ajuste y preajustes." },
+  "menuParent": { "message": "🎨 Photopea" },
+  "menuOpen": { "message": "📷 Abrir imagen" },
+  "menuPreset": {
+    "message": "$icon$ Al lienzo: $name$ ($width$×$height$)",
+    "placeholders": {
+      "icon": { "content": "$1" },
+      "name": { "content": "$2" },
+      "width": { "content": "$3" },
+      "height": { "content": "$4" }
+    }
+  },
+  "popupSubtitle": { "message": "Clic derecho en la imagen → 🎨 Photopea" },
+  "presetsHeading": { "message": "Preajustes de lienzo" },
+  "recentHeading": { "message": "Imágenes recientes" },
+  "btnSettings": { "message": "Ajustes" },
+  "btnOpenPhotopea": { "message": "Abrir Photopea" },
+  "popupOpenBlank": { "message": "En blanco" },
+  "popupPresetHint": { "message": "Abrir un lienzo en blanco de este tamaño en Photopea" },
+  "popupShortcutHint": { "message": "Atajo: Alt+Shift+P (última imagen)" },
+  "recentDataImage": { "message": "Imagen incrustada" },
+  "emptyPresets": { "message": "No hay preajustes activos. Abre los ajustes para añadir." },
+  "statusActive": { "message": "Activo" },
+  "statusDisabled": { "message": "Desactivado" },
+  "optionsTitle": { "message": "Send to Photopea — Ajustes" },
+  "optionsHeaderSubtitle": { "message": "Ajustes de la extensión" },
+  "optionsHeaderSubtitleShort": { "message": "Ajustes de la extensión" },
+  "optionsSectionHeading": { "message": "Preajustes de lienzo" },
+  "optionsSectionDesc": { "message": "Los preajustes activos aparecen en el menú contextual al hacer clic derecho en una imagen. Hasta 15." },
+  "settingsSectionHeading": { "message": "General" },
+  "settingsSectionDesc": { "message": "Cómo se abre Photopea y cómo se coloca la imagen en el lienzo." },
+  "labelOpenIn": { "message": "Abrir en" },
+  "optNewTab": { "message": "Nueva pestaña" },
+  "optCurrentTab": { "message": "Pestaña actual" },
+  "labelFitMode": { "message": "Colocación de la imagen" },
+  "optFitCenter": { "message": "Centrar (tamaño original)" },
+  "optFitContain": { "message": "Ajustar dentro del lienzo" },
+  "optFitCover": { "message": "Llenar el lienzo (recortar)" },
+  "optFitStretch": { "message": "Estirar al lienzo" },
+  "labelCanvasFill": { "message": "Fondo del lienzo" },
+  "optFillWhite": { "message": "Blanco" },
+  "optFillTransparent": { "message": "Transparente" },
+  "optFillBlack": { "message": "Negro" },
+  "labelDefaultDpi": { "message": "DPI predeterminado" },
+  "labelNotifyOnError": { "message": "Mostrar notificación si no se puede extraer la imagen" },
+  "shortcutHint": { "message": "Atajo de teclado: Alt+Shift+P abre la última imagen con clic derecho (cámbialo en about:addons → engranaje → Administrar atajos de extensión)." },
+  "permissionHint": { "message": "«Acceder a tus datos en todos los sitios» solo se usa para descargar imágenes que bloquean hotlinking (CORS) y poder abrirlas en Photopea." },
+  "btnSave": { "message": "Guardar" },
+  "btnReset": { "message": "Restablecer predeterminados" },
+  "btnAddPreset": { "message": "+ Añadir preajuste" },
+  "btnRemovePreset": { "message": "Eliminar preajuste" },
+  "newPresetName": { "message": "Nuevo preajuste" },
+  "footerText": { "message": "Clic derecho en cualquier imagen → 🎨 Photopea" },
+  "presetNum": {
+    "message": "Preajuste $num$",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "labelName": { "message": "Nombre" },
+  "labelIcon": { "message": "Icono" },
+  "placeholderName": { "message": "Nombre del preajuste" },
+  "labelWidth": { "message": "Ancho" },
+  "labelHeight": { "message": "Alto" },
+  "labelDpi": { "message": "DPI" },
+  "toastSaveSuccess": { "message": "✓ ¡Ajustes guardados!" },
+  "toastReset": { "message": "↩ Preajustes y ajustes restablecidos" },
+  "errEnterName": {
+    "message": "Preajuste $num$: introduce un nombre",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidWidth": {
+    "message": "Preajuste $num$: ancho no válido",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidHeight": {
+    "message": "Preajuste $num$: alto no válido",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidDpi": {
+    "message": "Preajuste $num$: DPI no válido",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errMinPresets": { "message": "Mantén al menos un preajuste" },
+  "alertManualCopy": { "message": "No se pudo extraer la imagen automáticamente. Cópiala manualmente (clic derecho → Copiar imagen) y pégala en Photopea con Ctrl+V." },
+  "notifyNoImage": { "message": "Aún no hay imagen. Haz clic derecho en una imagen y luego usa el atajo." },
+  "commandOpenDescription": { "message": "Abrir la última imagen en Photopea" },
+  "alertImageTooLargeCanvas": { "message": "La imagen es demasiado grande para la URL del lienzo: se abrió tal cual. Usa Tamaño de imagen en Photopea si hace falta." },
+  "alertCanvasPlaceFailed": { "message": "La imagen se abrió en Photopea, pero falló la colocación automática en el lienzo. Puedes copiar/pegar en un documento nuevo." }
 }

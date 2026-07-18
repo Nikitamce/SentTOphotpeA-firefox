@@ -1,0 +1,90 @@
+{
+  "extensionName": { "message": "Send to Photopea" },
+  "extensionDescription": { "message": "संदर्भ मेनू से चित्र Photopea में भेजें — जैसे हैं वैसे खोलें या कस्टम कैनवस पर फिट मोड और प्रीसेट के साथ रखें।" },
+  "menuParent": { "message": "🎨 Photopea" },
+  "menuOpen": { "message": "📷 चित्र खोलें" },
+  "menuPreset": {
+    "message": "$icon$ कैनवस पर: $name$ ($width$×$height$)",
+    "placeholders": {
+      "icon": { "content": "$1" },
+      "name": { "content": "$2" },
+      "width": { "content": "$3" },
+      "height": { "content": "$4" }
+    }
+  },
+  "popupSubtitle": { "message": "चित्र पर राइट‑क्लिक → 🎨 Photopea" },
+  "presetsHeading": { "message": "कैनवस प्रीसेट" },
+  "recentHeading": { "message": "हाल के चित्र" },
+  "btnSettings": { "message": "सेटिंग्स" },
+  "btnOpenPhotopea": { "message": "Photopea खोलें" },
+  "popupOpenBlank": { "message": "खाली" },
+  "popupPresetHint": { "message": "Photopea में इस आकार का खाली कैनवस खोलें" },
+  "popupShortcutHint": { "message": "शॉर्टकट: Alt+Shift+P (अंतिम चित्र)" },
+  "recentDataImage": { "message": "एम्बेडेड चित्र" },
+  "emptyPresets": { "message": "कोई सक्रिय प्रीसेट नहीं। जोड़ने के लिए सेटिंग्स खोलें।" },
+  "statusActive": { "message": "सक्रिय" },
+  "statusDisabled": { "message": "बंद" },
+  "optionsTitle": { "message": "Send to Photopea — सेटिंग्स" },
+  "optionsHeaderSubtitle": { "message": "एक्सटेंशन सेटिंग्स" },
+  "optionsHeaderSubtitleShort": { "message": "एक्सटेंशन सेटिंग्स" },
+  "optionsSectionHeading": { "message": "कैनवस प्रीसेट" },
+  "optionsSectionDesc": { "message": "सक्रिय प्रीसेट चित्र पर राइट‑क्लिक करने पर मेनू में दिखते हैं। अधिकतम 15।" },
+  "settingsSectionHeading": { "message": "सामान्य" },
+  "settingsSectionDesc": { "message": "Photopea कैसे खुले और चित्र कैनवस पर कैसे रखे जाएँ।" },
+  "labelOpenIn": { "message": "खोलें" },
+  "optNewTab": { "message": "नए टैब में" },
+  "optCurrentTab": { "message": "वर्तमान टैब में" },
+  "labelFitMode": { "message": "चित्र स्थान" },
+  "optFitCenter": { "message": "केंद्र (मूल आकार)" },
+  "optFitContain": { "message": "कैनवस के अंदर फिट" },
+  "optFitCover": { "message": "कैनवस भरें (क्रॉप)" },
+  "optFitStretch": { "message": "कैनवस तक खींचें" },
+  "labelCanvasFill": { "message": "कैनवस पृष्ठभूमि" },
+  "optFillWhite": { "message": "सफ़ेद" },
+  "optFillTransparent": { "message": "पारदर्शी" },
+  "optFillBlack": { "message": "काला" },
+  "labelDefaultDpi": { "message": "डिफ़ॉल्ट DPI" },
+  "labelNotifyOnError": { "message": "चित्र निकालने में विफल होने पर सूचना दिखाएँ" },
+  "shortcutHint": { "message": "कीबोर्ड शॉर्टकट: Alt+Shift+P अंतिम राइट‑क्लिक चित्र खोलता है (about:addons → गियर → Manage Extension Shortcuts)।" },
+  "permissionHint": { "message": "«सभी वेबसाइटों के डेटा तक पहुँच» केवल उन चित्रों को डाउनलोड करने के लिए है जो hotlink (CORS) रोकते हैं, ताकि Photopea उन्हें खोल सके।" },
+  "btnSave": { "message": "सहेजें" },
+  "btnReset": { "message": "डिफ़ॉल्ट पर रीसेट" },
+  "btnAddPreset": { "message": "+ प्रीसेट जोड़ें" },
+  "btnRemovePreset": { "message": "प्रीसेट हटाएँ" },
+  "newPresetName": { "message": "नया प्रीसेट" },
+  "footerText": { "message": "किसी भी चित्र पर राइट‑क्लिक → 🎨 Photopea" },
+  "presetNum": {
+    "message": "प्रीसेट $num$",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "labelName": { "message": "नाम" },
+  "labelIcon": { "message": "आइकन" },
+  "placeholderName": { "message": "प्रीसेट नाम" },
+  "labelWidth": { "message": "चौड़ाई" },
+  "labelHeight": { "message": "ऊँचाई" },
+  "labelDpi": { "message": "DPI" },
+  "toastSaveSuccess": { "message": "✓ सेटिंग्स सहेजी गईं!" },
+  "toastReset": { "message": "↩ प्रीसेट और सेटिंग्स डिफ़ॉल्ट पर" },
+  "errEnterName": {
+    "message": "प्रीसेट $num$: नाम दर्ज करें",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidWidth": {
+    "message": "प्रीसेट $num$: अमान्य चौड़ाई",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidHeight": {
+    "message": "प्रीसेट $num$: अमान्य ऊँचाई",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidDpi": {
+    "message": "प्रीसेट $num$: अमान्य DPI",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errMinPresets": { "message": "कम से कम एक प्रीसेट रखें" },
+  "alertManualCopy": { "message": "चित्र स्वचालित रूप से नहीं निकाला जा सका। मैन्युअल कॉपी करें (राइट‑क्लिक → Copy Image) और Photopea में Ctrl+V से पेस्ट करें।" },
+  "notifyNoImage": { "message": "अभी कोई चित्र नहीं। पहले चित्र पर राइट‑क्लिक करें, फिर शॉर्टकट।" },
+  "commandOpenDescription": { "message": "अंतिम चित्र Photopea में खोलें" },
+  "alertImageTooLargeCanvas": { "message": "चित्र कैनवस URL के लिए बहुत बड़ा — जैसे है खोला गया। ज़रूरत हो तो Photopea में Image Size।" },
+  "alertCanvasPlaceFailed": { "message": "चित्र Photopea में खुला, पर कैनवस पर स्वतः रखना विफल। नए दस्तावेज़ में कॉपी/पेस्ट कर सकते हैं।" }
+}

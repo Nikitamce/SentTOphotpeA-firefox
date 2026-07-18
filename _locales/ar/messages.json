@@ -1,94 +1,90 @@
-﻿{
-    "extensionName":  {
-                          "message":  "إرسال إلى Photopea"
-                      },
-    "menuParent":  {
-                       "message":  "🎨 Photopea"
-                   },
-    "menuOpen":  {
-                     "message":  "📷 فتح الصورة"
-                 },
-    "popupSubtitle":  {
-                          "message":  "نقرة يمينية على الصورة → 🎨 Photopea"
-                      },
-    "presetsHeading":  {
-                           "message":  "قوالب لوحة الرسم"
-                       },
-    "btnSettings":  {
-                        "message":  "الإعدادات"
-                    },
-    "emptyPresets":  {
-                         "message":  "لا توجد قوالب نشطة. افتح الإعدادات لإضافة قوالب."
-                     },
-    "statusActive":  {
-                         "message":  "نشط"
-                     },
-    "statusDisabled":  {
-                           "message":  "معطل"
-                       },
-    "optionsTitle":  {
-                         "message":  "إرسال إلى Photopea — الإعدادات"
-                     },
-    "optionsSectionHeading":  {
-                                  "message":  "قوالب لوحة الرسم"
-                              },
-    "btnSave":  {
-                    "message":  "حفظ"
-                },
-    "btnReset":  {
-                     "message":  "إعادة تعيين للافتراضي"
-                 },
-    "presetNum":  {
-                      "message":  "قالب $num$",
-                      "placeholders":  {
-                                           "num":  {
-                                                       "content":  "$1"
-                                                   }
-                                       }
-                  },
-    "labelName":  {
-                      "message":  "الاسم"
-                  },
-    "placeholderName":  {
-                            "message":  "اسم القالب"
-                        },
-    "labelWidth":  {
-                       "message":  "العرض"
-                   },
-    "labelHeight":  {
-                        "message":  "الارتفاع"
-                    },
-    "toastSaveSuccess":  {
-                             "message":  "✓ تم حفظ الإعدادات!"
-                         },
-    "toastReset":  {
-                       "message":  "↩ تم إعادة تعيين القوالب للافتراضي"
-                   },
-    "errEnterName":  {
-                         "message":  "قالب $num$: يرجى إدخال اسم",
-                         "placeholders":  {
-                                              "num":  {
-                                                          "content":  "$1"
-                                                      }
-                                          }
-                     },
-    "errInvalidWidth":  {
-                            "message":  "قالب $num$: العرض غير صالح",
-                            "placeholders":  {
-                                                 "num":  {
-                                                             "content":  "$1"
-                                                         }
-                                             }
-                        },
-    "errInvalidHeight":  {
-                             "message":  "قالب $num$: الارتفاع غير صالح",
-                             "placeholders":  {
-                                                  "num":  {
-                                                              "content":  "$1"
-                                                          }
-                                              }
-                         },
-    "alertManualCopy":  {
-                            "message":  "فشل استخراج الصورة تلقائيًا. يرجى نسخها يدويًا (نقرة يمينية -\u003e \"نسخ الصورة\") ولصقها في Photopea عبر Ctrl+V."
-                        }
+{
+  "extensionName": { "message": "Send to Photopea" },
+  "extensionDescription": { "message": "أرسل الصور إلى Photopea من قائمة السياق — افتحها كما هي أو ضعها على لوحة مخصصة بأوضاع ملاءمة وإعدادات مسبقة." },
+  "menuParent": { "message": "🎨 Photopea" },
+  "menuOpen": { "message": "📷 فتح الصورة" },
+  "menuPreset": {
+    "message": "$icon$ إلى اللوحة: $name$ ($width$×$height$)",
+    "placeholders": {
+      "icon": { "content": "$1" },
+      "name": { "content": "$2" },
+      "width": { "content": "$3" },
+      "height": { "content": "$4" }
+    }
+  },
+  "popupSubtitle": { "message": "انقر بزر الماوس الأيمن على الصورة → 🎨 Photopea" },
+  "presetsHeading": { "message": "إعدادات اللوحة المسبقة" },
+  "recentHeading": { "message": "الصور الأخيرة" },
+  "btnSettings": { "message": "الإعدادات" },
+  "btnOpenPhotopea": { "message": "فتح Photopea" },
+  "popupOpenBlank": { "message": "فارغ" },
+  "popupPresetHint": { "message": "افتح لوحة فارغة بهذا الحجم في Photopea" },
+  "popupShortcutHint": { "message": "اختصار: Alt+Shift+P (آخر صورة)" },
+  "recentDataImage": { "message": "صورة مضمّنة" },
+  "emptyPresets": { "message": "لا توجد إعدادات مسبقة نشطة. افتح الإعدادات للإضافة." },
+  "statusActive": { "message": "نشط" },
+  "statusDisabled": { "message": "معطّل" },
+  "optionsTitle": { "message": "Send to Photopea — الإعدادات" },
+  "optionsHeaderSubtitle": { "message": "إعدادات الامتداد" },
+  "optionsHeaderSubtitleShort": { "message": "إعدادات الامتداد" },
+  "optionsSectionHeading": { "message": "إعدادات اللوحة المسبقة" },
+  "optionsSectionDesc": { "message": "تظهر الإعدادات النشطة في قائمة السياق عند النقر بزر الماوس الأيمن على صورة. حتى 15." },
+  "settingsSectionHeading": { "message": "عام" },
+  "settingsSectionDesc": { "message": "كيف يُفتح Photopea وكيف تُوضع الصورة على اللوحة." },
+  "labelOpenIn": { "message": "فتح في" },
+  "optNewTab": { "message": "علامة تبويب جديدة" },
+  "optCurrentTab": { "message": "علامة التبويب الحالية" },
+  "labelFitMode": { "message": "موضع الصورة" },
+  "optFitCenter": { "message": "توسيط (الحجم الأصلي)" },
+  "optFitContain": { "message": "ملاءمة داخل اللوحة" },
+  "optFitCover": { "message": "ملء اللوحة (قص)" },
+  "optFitStretch": { "message": "تمديد إلى اللوحة" },
+  "labelCanvasFill": { "message": "خلفية اللوحة" },
+  "optFillWhite": { "message": "أبيض" },
+  "optFillTransparent": { "message": "شفاف" },
+  "optFillBlack": { "message": "أسود" },
+  "labelDefaultDpi": { "message": "DPI الافتراضي" },
+  "labelNotifyOnError": { "message": "إظهار إشعار إذا تعذّر استخراج الصورة" },
+  "shortcutHint": { "message": "اختصار لوحة المفاتيح: Alt+Shift+P يفتح آخر صورة بنقرة يمين (غيّره من about:addons → الترس → إدارة اختصارات الامتدادات)." },
+  "permissionHint": { "message": "يُستخدم «الوصول إلى بياناتك لجميع المواقع» فقط لتنزيل الصور التي تمنع الربط الساخن (CORS) حتى يفتحها Photopea." },
+  "btnSave": { "message": "حفظ" },
+  "btnReset": { "message": "إعادة التعيين للافتراضي" },
+  "btnAddPreset": { "message": "+ إضافة إعداد مسبق" },
+  "btnRemovePreset": { "message": "إزالة الإعداد المسبق" },
+  "newPresetName": { "message": "إعداد مسبق جديد" },
+  "footerText": { "message": "انقر بزر الماوس الأيمن على أي صورة → 🎨 Photopea" },
+  "presetNum": {
+    "message": "الإعداد $num$",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "labelName": { "message": "الاسم" },
+  "labelIcon": { "message": "الأيقونة" },
+  "placeholderName": { "message": "اسم الإعداد المسبق" },
+  "labelWidth": { "message": "العرض" },
+  "labelHeight": { "message": "الارتفاع" },
+  "labelDpi": { "message": "DPI" },
+  "toastSaveSuccess": { "message": "✓ تم حفظ الإعدادات!" },
+  "toastReset": { "message": "↩ أُعيدت الإعدادات إلى الافتراضي" },
+  "errEnterName": {
+    "message": "الإعداد $num$: أدخل اسمًا",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidWidth": {
+    "message": "الإعداد $num$: عرض غير صالح",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidHeight": {
+    "message": "الإعداد $num$: ارتفاع غير صالح",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidDpi": {
+    "message": "الإعداد $num$: DPI غير صالح",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errMinPresets": { "message": "أبقِ إعدادًا مسبقًا واحدًا على الأقل" },
+  "alertManualCopy": { "message": "تعذّر استخراج الصورة تلقائيًا. انسخها يدويًا (زر أيمن → نسخ الصورة) والصقها في Photopea بـ Ctrl+V." },
+  "notifyNoImage": { "message": "لا توجد صورة بعد. انقر يمينًا على صورة أولًا ثم استخدم الاختصار." },
+  "commandOpenDescription": { "message": "فتح آخر صورة في Photopea" },
+  "alertImageTooLargeCanvas": { "message": "الصورة كبيرة جدًا لرابط اللوحة — فُتحت كما هي. استخدم حجم الصورة في Photopea عند الحاجة." },
+  "alertCanvasPlaceFailed": { "message": "فُتحت الصورة في Photopea، لكن الوضع التلقائي على اللوحة فشل. يمكنك النسخ/اللصق في مستند جديد." }
 }

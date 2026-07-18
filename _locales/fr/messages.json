@@ -1,94 +1,90 @@
-﻿{
-    "extensionName":  {
-                          "message":  "Envoyer à Photopea"
-                      },
-    "menuParent":  {
-                       "message":  "🎨 Photopea"
-                   },
-    "menuOpen":  {
-                     "message":  "📷 Ouvrir l\u0027image"
-                 },
-    "popupSubtitle":  {
-                          "message":  "Clic droit sur l\u0027image → 🎨 Photopea"
-                      },
-    "presetsHeading":  {
-                           "message":  "Préréglages de canevas"
-                       },
-    "btnSettings":  {
-                        "message":  "Paramètres"
-                    },
-    "emptyPresets":  {
-                         "message":  "Aucun préréglage actif. Ouvrez les paramètres pour en ajouter."
-                     },
-    "statusActive":  {
-                         "message":  "Actif"
-                     },
-    "statusDisabled":  {
-                           "message":  "Désactivé"
-                       },
-    "optionsTitle":  {
-                         "message":  "Envoyer à Photopea — Paramètres"
-                     },
-    "optionsSectionHeading":  {
-                                  "message":  "Préréglages de canevas"
-                              },
-    "btnSave":  {
-                    "message":  "Enregistrer"
-                },
-    "btnReset":  {
-                     "message":  "Rétablir par défaut"
-                 },
-    "presetNum":  {
-                      "message":  "Préréglage $num$",
-                      "placeholders":  {
-                                           "num":  {
-                                                       "content":  "$1"
-                                                   }
-                                       }
-                  },
-    "labelName":  {
-                      "message":  "Nom"
-                  },
-    "placeholderName":  {
-                            "message":  "Nom du préréglage"
-                        },
-    "labelWidth":  {
-                       "message":  "Largeur"
-                   },
-    "labelHeight":  {
-                        "message":  "Hauteur"
-                    },
-    "toastSaveSuccess":  {
-                             "message":  "✓ Paramètres enregistrés !"
-                         },
-    "toastReset":  {
-                       "message":  "↩ Préréglages rétablis par défaut"
-                   },
-    "errEnterName":  {
-                         "message":  "Préréglage $num$ : entrez un nom",
-                         "placeholders":  {
-                                              "num":  {
-                                                          "content":  "$1"
-                                                      }
-                                          }
-                     },
-    "errInvalidWidth":  {
-                            "message":  "Préréglage $num$ : largeur invalide",
-                            "placeholders":  {
-                                                 "num":  {
-                                                             "content":  "$1"
-                                                         }
-                                             }
-                        },
-    "errInvalidHeight":  {
-                             "message":  "Préréglage $num$ : hauteur invalide",
-                             "placeholders":  {
-                                                  "num":  {
-                                                              "content":  "$1"
-                                                          }
-                                              }
-                         },
-    "alertManualCopy":  {
-                            "message":  "Échec de l\u0027extraction automatique de l\u0027image. Veuillez la copier manuellement (clic droit -\u003e \u0027Copier l\u0027image\u0027) et la coller dans Photopea via Ctrl+V."
-                        }
+{
+  "extensionName": { "message": "Send to Photopea" },
+  "extensionDescription": { "message": "Envoyez des images vers Photopea depuis le menu contextuel — ouvrez-les telles quelles ou placez-les sur un canevas personnalisé avec modes d’ajustement et préréglages." },
+  "menuParent": { "message": "🎨 Photopea" },
+  "menuOpen": { "message": "📷 Ouvrir l’image" },
+  "menuPreset": {
+    "message": "$icon$ Sur le canevas : $name$ ($width$×$height$)",
+    "placeholders": {
+      "icon": { "content": "$1" },
+      "name": { "content": "$2" },
+      "width": { "content": "$3" },
+      "height": { "content": "$4" }
+    }
+  },
+  "popupSubtitle": { "message": "Clic droit sur l’image → 🎨 Photopea" },
+  "presetsHeading": { "message": "Préréglages de canevas" },
+  "recentHeading": { "message": "Images récentes" },
+  "btnSettings": { "message": "Paramètres" },
+  "btnOpenPhotopea": { "message": "Ouvrir Photopea" },
+  "popupOpenBlank": { "message": "Vide" },
+  "popupPresetHint": { "message": "Ouvrir un canevas vide de cette taille dans Photopea" },
+  "popupShortcutHint": { "message": "Raccourci : Alt+Shift+P (dernière image)" },
+  "recentDataImage": { "message": "Image intégrée" },
+  "emptyPresets": { "message": "Aucun préréglage actif. Ouvrez les paramètres pour en ajouter." },
+  "statusActive": { "message": "Actif" },
+  "statusDisabled": { "message": "Désactivé" },
+  "optionsTitle": { "message": "Send to Photopea — Paramètres" },
+  "optionsHeaderSubtitle": { "message": "Paramètres de l’extension" },
+  "optionsHeaderSubtitleShort": { "message": "Paramètres de l’extension" },
+  "optionsSectionHeading": { "message": "Préréglages de canevas" },
+  "optionsSectionDesc": { "message": "Les préréglages actifs apparaissent dans le menu contextuel au clic droit sur une image. Jusqu’à 15." },
+  "settingsSectionHeading": { "message": "Général" },
+  "settingsSectionDesc": { "message": "Comment Photopea s’ouvre et comment l’image est placée sur le canevas." },
+  "labelOpenIn": { "message": "Ouvrir dans" },
+  "optNewTab": { "message": "Nouvel onglet" },
+  "optCurrentTab": { "message": "Onglet actuel" },
+  "labelFitMode": { "message": "Placement de l’image" },
+  "optFitCenter": { "message": "Centrer (taille d’origine)" },
+  "optFitContain": { "message": "Ajuster dans le canevas" },
+  "optFitCover": { "message": "Remplir le canevas (rognage)" },
+  "optFitStretch": { "message": "Étirer au canevas" },
+  "labelCanvasFill": { "message": "Fond du canevas" },
+  "optFillWhite": { "message": "Blanc" },
+  "optFillTransparent": { "message": "Transparent" },
+  "optFillBlack": { "message": "Noir" },
+  "labelDefaultDpi": { "message": "DPI par défaut" },
+  "labelNotifyOnError": { "message": "Afficher une notification si l’image ne peut pas être extraite" },
+  "shortcutHint": { "message": "Raccourci clavier : Alt+Shift+P ouvre la dernière image cliquée droit (modifiable dans about:addons → engrenage → Gérer les raccourcis des extensions)." },
+  "permissionHint": { "message": "« Accéder à vos données pour tous les sites » sert uniquement à télécharger les images qui bloquent le hotlinking (CORS) pour que Photopea puisse les ouvrir." },
+  "btnSave": { "message": "Enregistrer" },
+  "btnReset": { "message": "Réinitialiser" },
+  "btnAddPreset": { "message": "+ Ajouter un préréglage" },
+  "btnRemovePreset": { "message": "Supprimer le préréglage" },
+  "newPresetName": { "message": "Nouveau préréglage" },
+  "footerText": { "message": "Clic droit sur n’importe quelle image → 🎨 Photopea" },
+  "presetNum": {
+    "message": "Préréglage $num$",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "labelName": { "message": "Nom" },
+  "labelIcon": { "message": "Icône" },
+  "placeholderName": { "message": "Nom du préréglage" },
+  "labelWidth": { "message": "Largeur" },
+  "labelHeight": { "message": "Hauteur" },
+  "labelDpi": { "message": "DPI" },
+  "toastSaveSuccess": { "message": "✓ Paramètres enregistrés !" },
+  "toastReset": { "message": "↩ Préréglages et paramètres réinitialisés" },
+  "errEnterName": {
+    "message": "Préréglage $num$ : saisissez un nom",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidWidth": {
+    "message": "Préréglage $num$ : largeur invalide",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidHeight": {
+    "message": "Préréglage $num$ : hauteur invalide",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidDpi": {
+    "message": "Préréglage $num$ : DPI invalide",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errMinPresets": { "message": "Gardez au moins un préréglage" },
+  "alertManualCopy": { "message": "Impossible d’extraire l’image automatiquement. Copiez-la manuellement (clic droit → Copier l’image) et collez dans Photopea avec Ctrl+V." },
+  "notifyNoImage": { "message": "Pas encore d’image. Faites d’abord un clic droit sur une image, puis le raccourci." },
+  "commandOpenDescription": { "message": "Ouvrir la dernière image dans Photopea" },
+  "alertImageTooLargeCanvas": { "message": "Image trop grande pour l’URL du canevas — ouverte telle quelle. Utilisez Taille de l’image dans Photopea si besoin." },
+  "alertCanvasPlaceFailed": { "message": "Image ouverte dans Photopea, mais le placement automatique sur le canevas a échoué. Vous pouvez copier/coller dans un nouveau document." }
 }

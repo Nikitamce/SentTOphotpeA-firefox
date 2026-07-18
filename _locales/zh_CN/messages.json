@@ -1,94 +1,90 @@
-﻿{
-    "extensionName":  {
-                          "message":  "发送到 Photopea"
-                      },
-    "menuParent":  {
-                       "message":  "🎨 Photopea"
-                   },
-    "menuOpen":  {
-                     "message":  "📷 打开图像"
-                 },
-    "popupSubtitle":  {
-                          "message":  "右键点击图像 → 🎨 Photopea"
-                      },
-    "presetsHeading":  {
-                           "message":  "画布预设"
-                       },
-    "btnSettings":  {
-                        "message":  "设置"
-                    },
-    "emptyPresets":  {
-                         "message":  "没有启用的预设。请打开设置以添加。"
-                     },
-    "statusActive":  {
-                         "message":  "启用"
-                     },
-    "statusDisabled":  {
-                           "message":  "禁用"
-                       },
-    "optionsTitle":  {
-                         "message":  "发送到 Photopea — 设置"
-                     },
-    "optionsSectionHeading":  {
-                                  "message":  "画布预设"
-                              },
-    "btnSave":  {
-                    "message":  "保存"
-                },
-    "btnReset":  {
-                     "message":  "恢复默认"
-                 },
-    "presetNum":  {
-                      "message":  "预设 $num$",
-                      "placeholders":  {
-                                           "num":  {
-                                                       "content":  "$1"
-                                                   }
-                                       }
-                  },
-    "labelName":  {
-                      "message":  "名称"
-                  },
-    "placeholderName":  {
-                            "message":  "预设名称"
-                        },
-    "labelWidth":  {
-                       "message":  "宽度"
-                   },
-    "labelHeight":  {
-                        "message":  "高度"
-                    },
-    "toastSaveSuccess":  {
-                             "message":  "✓ 设置已保存！"
-                         },
-    "toastReset":  {
-                       "message":  "↩ 预设已重置为默认值"
-                   },
-    "errEnterName":  {
-                         "message":  "预设 $num$: 请输入名称",
-                         "placeholders":  {
-                                              "num":  {
-                                                          "content":  "$1"
-                                                      }
-                                          }
-                     },
-    "errInvalidWidth":  {
-                            "message":  "预设 $num$: 宽度无效",
-                            "placeholders":  {
-                                                 "num":  {
-                                                             "content":  "$1"
-                                                         }
-                                             }
-                        },
-    "errInvalidHeight":  {
-                             "message":  "预设 $num$: 高度无效",
-                             "placeholders":  {
-                                                  "num":  {
-                                                              "content":  "$1"
-                                                          }
-                                              }
-                         },
-    "alertManualCopy":  {
-                            "message":  "无法自动提取图像。请手动复制（右键 -\u003e “复制图像”）并在 Photopea 中使用 Ctrl+V 粘贴。"
-                        }
+{
+  "extensionName": { "message": "Send to Photopea" },
+  "extensionDescription": { "message": "通过右键菜单将图片发送到 Photopea — 原样打开，或按预设尺寸与适配模式放到自定义画布上。" },
+  "menuParent": { "message": "🎨 Photopea" },
+  "menuOpen": { "message": "📷 打开图片" },
+  "menuPreset": {
+    "message": "$icon$ 放到画布：$name$ ($width$×$height$)",
+    "placeholders": {
+      "icon": { "content": "$1" },
+      "name": { "content": "$2" },
+      "width": { "content": "$3" },
+      "height": { "content": "$4" }
+    }
+  },
+  "popupSubtitle": { "message": "在图片上右键 → 🎨 Photopea" },
+  "presetsHeading": { "message": "画布预设" },
+  "recentHeading": { "message": "最近的图片" },
+  "btnSettings": { "message": "设置" },
+  "btnOpenPhotopea": { "message": "打开 Photopea" },
+  "popupOpenBlank": { "message": "空白" },
+  "popupPresetHint": { "message": "在 Photopea 中打开此尺寸的空白画布" },
+  "popupShortcutHint": { "message": "快捷键：Alt+Shift+P（上一张图片）" },
+  "recentDataImage": { "message": "内嵌图片" },
+  "emptyPresets": { "message": "没有启用的预设。请打开设置添加。" },
+  "statusActive": { "message": "启用" },
+  "statusDisabled": { "message": "关闭" },
+  "optionsTitle": { "message": "Send to Photopea — 设置" },
+  "optionsHeaderSubtitle": { "message": "扩展设置" },
+  "optionsHeaderSubtitleShort": { "message": "扩展设置" },
+  "optionsSectionHeading": { "message": "画布预设" },
+  "optionsSectionDesc": { "message": "启用的预设会出现在图片右键菜单中。最多 15 个。" },
+  "settingsSectionHeading": { "message": "常规" },
+  "settingsSectionDesc": { "message": "Photopea 的打开方式以及图片在画布上的放置方式。" },
+  "labelOpenIn": { "message": "打开位置" },
+  "optNewTab": { "message": "新标签页" },
+  "optCurrentTab": { "message": "当前标签页" },
+  "labelFitMode": { "message": "图片放置" },
+  "optFitCenter": { "message": "居中（原始尺寸）" },
+  "optFitContain": { "message": "适应画布内" },
+  "optFitCover": { "message": "铺满画布（裁剪）" },
+  "optFitStretch": { "message": "拉伸至画布" },
+  "labelCanvasFill": { "message": "画布背景" },
+  "optFillWhite": { "message": "白色" },
+  "optFillTransparent": { "message": "透明" },
+  "optFillBlack": { "message": "黑色" },
+  "labelDefaultDpi": { "message": "默认 DPI" },
+  "labelNotifyOnError": { "message": "无法提取图片时显示通知" },
+  "shortcutHint": { "message": "快捷键：Alt+Shift+P 打开上次右键的图片（可在 about:addons → 齿轮 → 管理扩展快捷键 中修改）。" },
+  "permissionHint": { "message": "“访问所有网站数据”仅用于下载禁止热链（CORS）的图片，以便 Photopea 打开它们。" },
+  "btnSave": { "message": "保存" },
+  "btnReset": { "message": "恢复默认" },
+  "btnAddPreset": { "message": "+ 添加预设" },
+  "btnRemovePreset": { "message": "删除预设" },
+  "newPresetName": { "message": "新预设" },
+  "footerText": { "message": "在任意图片上右键 → 🎨 Photopea" },
+  "presetNum": {
+    "message": "预设 $num$",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "labelName": { "message": "名称" },
+  "labelIcon": { "message": "图标" },
+  "placeholderName": { "message": "预设名称" },
+  "labelWidth": { "message": "宽度" },
+  "labelHeight": { "message": "高度" },
+  "labelDpi": { "message": "DPI" },
+  "toastSaveSuccess": { "message": "✓ 设置已保存！" },
+  "toastReset": { "message": "↩ 预设与设置已恢复默认" },
+  "errEnterName": {
+    "message": "预设 $num$：请输入名称",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidWidth": {
+    "message": "预设 $num$：宽度无效",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidHeight": {
+    "message": "预设 $num$：高度无效",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidDpi": {
+    "message": "预设 $num$：DPI 无效",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errMinPresets": { "message": "请至少保留一个预设" },
+  "alertManualCopy": { "message": "无法自动提取图片。请手动复制（右键 → 复制图像），在 Photopea 中用 Ctrl+V 粘贴。" },
+  "notifyNoImage": { "message": "还没有图片。请先在图片上右键，再使用快捷键。" },
+  "commandOpenDescription": { "message": "在 Photopea 中打开上一张图片" },
+  "alertImageTooLargeCanvas": { "message": "图片对画布 URL 过大 — 已原样打开。可在 Photopea 中使用图像大小。" },
+  "alertCanvasPlaceFailed": { "message": "图片已在 Photopea 中打开，但自动放到画布失败。可复制/粘贴到新文档。" }
 }

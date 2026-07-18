@@ -1,0 +1,90 @@
+{
+  "extensionName": { "message": "Send to Photopea" },
+  "extensionDescription": { "message": "سیاق مینو سے تصاویر Photopea میں بھیجیں — ویسی کھولیں یا کسٹم کینوس پر فٹ موڈز اور پری سیٹس کے ساتھ رکھیں۔" },
+  "menuParent": { "message": "🎨 Photopea" },
+  "menuOpen": { "message": "📷 تصویر کھولیں" },
+  "menuPreset": {
+    "message": "$icon$ کینوس پر: $name$ ($width$×$height$)",
+    "placeholders": {
+      "icon": { "content": "$1" },
+      "name": { "content": "$2" },
+      "width": { "content": "$3" },
+      "height": { "content": "$4" }
+    }
+  },
+  "popupSubtitle": { "message": "تصویر پر دایاں کلک → 🎨 Photopea" },
+  "presetsHeading": { "message": "کینوس پری سیٹس" },
+  "recentHeading": { "message": "حالیہ تصاویر" },
+  "btnSettings": { "message": "ترتیبات" },
+  "btnOpenPhotopea": { "message": "Photopea کھولیں" },
+  "popupOpenBlank": { "message": "خالی" },
+  "popupPresetHint": { "message": "Photopea میں اس سائز کا خالی کینوس کھولیں" },
+  "popupShortcutHint": { "message": "شارٹ کٹ: Alt+Shift+P (آخری تصویر)" },
+  "recentDataImage": { "message": "ایمبیڈڈ تصویر" },
+  "emptyPresets": { "message": "کوئی فعال پری سیٹ نہیں۔ شامل کرنے کے لیے ترتیبات کھولیں۔" },
+  "statusActive": { "message": "فعال" },
+  "statusDisabled": { "message": "بند" },
+  "optionsTitle": { "message": "Send to Photopea — ترتیبات" },
+  "optionsHeaderSubtitle": { "message": "ایکسٹینشن کی ترتیبات" },
+  "optionsHeaderSubtitleShort": { "message": "ایکسٹینشن کی ترتیبات" },
+  "optionsSectionHeading": { "message": "کینوس پری سیٹس" },
+  "optionsSectionDesc": { "message": "فعال پری سیٹس تصویر پر دایاں کلک کرنے پر مینو میں آتے ہیں۔ زیادہ سے زیادہ ۱۵۔" },
+  "settingsSectionHeading": { "message": "عمومی" },
+  "settingsSectionDesc": { "message": "Photopea کیسے کھلے اور تصویر کینوس پر کیسے رکھی جائے۔" },
+  "labelOpenIn": { "message": "کھولیں" },
+  "optNewTab": { "message": "نئی ٹیب میں" },
+  "optCurrentTab": { "message": "موجودہ ٹیب میں" },
+  "labelFitMode": { "message": "تصویر کی جگہ" },
+  "optFitCenter": { "message": "مرکز (اصل سائز)" },
+  "optFitContain": { "message": "کینوس کے اندر فٹ" },
+  "optFitCover": { "message": "کینوس بھریں (کراپ)" },
+  "optFitStretch": { "message": "کینوس تک کھینچیں" },
+  "labelCanvasFill": { "message": "کینوس پس منظر" },
+  "optFillWhite": { "message": "سفید" },
+  "optFillTransparent": { "message": "شفاف" },
+  "optFillBlack": { "message": "سیاہ" },
+  "labelDefaultDpi": { "message": "ڈیفالٹ DPI" },
+  "labelNotifyOnError": { "message": "تصویر نکالنے میں ناکامی پر اطلاع دکھائیں" },
+  "shortcutHint": { "message": "کی بورڈ شارٹ کٹ: Alt+Shift+P آخری دایاں کلک تصویر کھولتا ہے (about:addons → گیئر → Manage Extension Shortcuts)۔" },
+  "permissionHint": { "message": "«تمام ویب سائٹس کا ڈیٹا» صرف ان تصاویر کو ڈاؤن لوڈ کرنے کے لیے ہے جو hotlink (CORS) روکتی ہیں تاکہ Photopea انہیں کھول سکے۔" },
+  "btnSave": { "message": "محفوظ کریں" },
+  "btnReset": { "message": "ڈیفالٹ پر ری سیٹ" },
+  "btnAddPreset": { "message": "+ پری سیٹ شامل کریں" },
+  "btnRemovePreset": { "message": "پری سیٹ ہٹائیں" },
+  "newPresetName": { "message": "نیا پری سیٹ" },
+  "footerText": { "message": "کسی بھی تصویر پر دایاں کلک → 🎨 Photopea" },
+  "presetNum": {
+    "message": "پری سیٹ $num$",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "labelName": { "message": "نام" },
+  "labelIcon": { "message": "آئیکن" },
+  "placeholderName": { "message": "پری سیٹ کا نام" },
+  "labelWidth": { "message": "چوڑائی" },
+  "labelHeight": { "message": "اونچائی" },
+  "labelDpi": { "message": "DPI" },
+  "toastSaveSuccess": { "message": "✓ ترتیبات محفوظ ہو گئیں!" },
+  "toastReset": { "message": "↩ پری سیٹس اور ترتیبات ڈیفالٹ پر" },
+  "errEnterName": {
+    "message": "پری سیٹ $num$: نام درج کریں",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidWidth": {
+    "message": "پری سیٹ $num$: غلط چوڑائی",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidHeight": {
+    "message": "پری سیٹ $num$: غلط اونچائی",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidDpi": {
+    "message": "پری سیٹ $num$: غلط DPI",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errMinPresets": { "message": "کم از کم ایک پری سیٹ رکھیں" },
+  "alertManualCopy": { "message": "تصویر خود بخود نہیں نکالی جا سکی۔ دستی کاپی کریں (دایاں کلک → Copy Image) اور Photopea میں Ctrl+V سے پیسٹ کریں۔" },
+  "notifyNoImage": { "message": "ابھی کوئی تصویر نہیں۔ پہلے تصویر پر دایاں کلک کریں، پھر شارٹ کٹ۔" },
+  "commandOpenDescription": { "message": "آخری تصویر Photopea میں کھولیں" },
+  "alertImageTooLargeCanvas": { "message": "تصویر کینوس URL کے لیے بہت بڑی — جیسی ہے کھولی گئی۔ ضرورت ہو تو Photopea میں Image Size۔" },
+  "alertCanvasPlaceFailed": { "message": "تصویر Photopea میں کھلی، لیکن کینوس پر خودکار رکھنا ناکام۔ نئے دستاویز میں کاپی/پیسٹ کر سکتے ہیں۔" }
+}

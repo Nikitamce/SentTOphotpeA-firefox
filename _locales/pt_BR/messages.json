@@ -1,94 +1,90 @@
-﻿{
-    "extensionName":  {
-                          "message":  "Enviar para o Photopea"
-                      },
-    "menuParent":  {
-                       "message":  "🎨 Photopea"
-                   },
-    "menuOpen":  {
-                     "message":  "📷 Abrir imagem"
-                 },
-    "popupSubtitle":  {
-                          "message":  "Clique com o botão direito na imagem → 🎨 Photopea"
-                      },
-    "presetsHeading":  {
-                           "message":  "Predefinições de Tela"
-                       },
-    "btnSettings":  {
-                        "message":  "Configurações"
-                    },
-    "emptyPresets":  {
-                         "message":  "Nenhuma predefinição ativa. Abra as configurações para adicionar."
-                     },
-    "statusActive":  {
-                         "message":  "Ativo"
-                     },
-    "statusDisabled":  {
-                           "message":  "Desativado"
-                       },
-    "optionsTitle":  {
-                         "message":  "Enviar para o Photopea — Configurações"
-                     },
-    "optionsSectionHeading":  {
-                                  "message":  "Predefinições de Tela"
-                              },
-    "btnSave":  {
-                    "message":  "Salvar"
-                },
-    "btnReset":  {
-                     "message":  "Restaurar padrões"
-                 },
-    "presetNum":  {
-                      "message":  "Predefinição $num$",
-                      "placeholders":  {
-                                           "num":  {
-                                                       "content":  "$1"
-                                                   }
-                                       }
-                  },
-    "labelName":  {
-                      "message":  "Nome"
-                  },
-    "placeholderName":  {
-                            "message":  "Nome da predefinição"
-                        },
-    "labelWidth":  {
-                       "message":  "Largura"
-                   },
-    "labelHeight":  {
-                        "message":  "Altura"
-                    },
-    "toastSaveSuccess":  {
-                             "message":  "✓ Configurações salvas!"
-                         },
-    "toastReset":  {
-                       "message":  "↩ Predefinições restauradas para o padrão"
-                   },
-    "errEnterName":  {
-                         "message":  "Predefinição $num$: insira um nome",
-                         "placeholders":  {
-                                              "num":  {
-                                                          "content":  "$1"
-                                                      }
-                                          }
-                     },
-    "errInvalidWidth":  {
-                            "message":  "Predefinição $num$: largura inválida",
-                            "placeholders":  {
-                                                 "num":  {
-                                                             "content":  "$1"
-                                                         }
-                                             }
-                        },
-    "errInvalidHeight":  {
-                             "message":  "Predefinição $num$: altura inválida",
-                             "placeholders":  {
-                                                  "num":  {
-                                                              "content":  "$1"
-                                                          }
-                                              }
-                         },
-    "alertManualCopy":  {
-                            "message":  "Não foi possível extrair a imagem automaticamente. Copie manualmente (botão direito -\u003e \u0027Copiar imagem\u0027) e cole no Photopea com Ctrl+V."
-                        }
+{
+  "extensionName": { "message": "Send to Photopea" },
+  "extensionDescription": { "message": "Envie imagens para o Photopea pelo menu de contexto — abra como estão ou coloque em uma tela personalizada com modos de ajuste e predefinições." },
+  "menuParent": { "message": "🎨 Photopea" },
+  "menuOpen": { "message": "📷 Abrir imagem" },
+  "menuPreset": {
+    "message": "$icon$ Na tela: $name$ ($width$×$height$)",
+    "placeholders": {
+      "icon": { "content": "$1" },
+      "name": { "content": "$2" },
+      "width": { "content": "$3" },
+      "height": { "content": "$4" }
+    }
+  },
+  "popupSubtitle": { "message": "Clique com o botão direito na imagem → 🎨 Photopea" },
+  "presetsHeading": { "message": "Predefinições de tela" },
+  "recentHeading": { "message": "Imagens recentes" },
+  "btnSettings": { "message": "Configurações" },
+  "btnOpenPhotopea": { "message": "Abrir Photopea" },
+  "popupOpenBlank": { "message": "Em branco" },
+  "popupPresetHint": { "message": "Abrir uma tela em branco deste tamanho no Photopea" },
+  "popupShortcutHint": { "message": "Atalho: Alt+Shift+P (última imagem)" },
+  "recentDataImage": { "message": "Imagem incorporada" },
+  "emptyPresets": { "message": "Nenhuma predefinição ativa. Abra as configurações para adicionar." },
+  "statusActive": { "message": "Ativo" },
+  "statusDisabled": { "message": "Desativado" },
+  "optionsTitle": { "message": "Send to Photopea — Configurações" },
+  "optionsHeaderSubtitle": { "message": "Configurações da extensão" },
+  "optionsHeaderSubtitleShort": { "message": "Configurações da extensão" },
+  "optionsSectionHeading": { "message": "Predefinições de tela" },
+  "optionsSectionDesc": { "message": "As predefinições ativas aparecem no menu de contexto ao clicar com o botão direito em uma imagem. Até 15." },
+  "settingsSectionHeading": { "message": "Geral" },
+  "settingsSectionDesc": { "message": "Como o Photopea abre e como a imagem é colocada na tela." },
+  "labelOpenIn": { "message": "Abrir em" },
+  "optNewTab": { "message": "Nova aba" },
+  "optCurrentTab": { "message": "Aba atual" },
+  "labelFitMode": { "message": "Posicionamento da imagem" },
+  "optFitCenter": { "message": "Centralizar (tamanho original)" },
+  "optFitContain": { "message": "Ajustar dentro da tela" },
+  "optFitCover": { "message": "Preencher a tela (cortar)" },
+  "optFitStretch": { "message": "Esticar até a tela" },
+  "labelCanvasFill": { "message": "Fundo da tela" },
+  "optFillWhite": { "message": "Branco" },
+  "optFillTransparent": { "message": "Transparente" },
+  "optFillBlack": { "message": "Preto" },
+  "labelDefaultDpi": { "message": "DPI padrão" },
+  "labelNotifyOnError": { "message": "Mostrar notificação se a imagem não puder ser extraída" },
+  "shortcutHint": { "message": "Atalho de teclado: Alt+Shift+P abre a última imagem com botão direito (altere em about:addons → engrenagem → Gerenciar atalhos de extensão)." },
+  "permissionHint": { "message": "«Acessar seus dados em todos os sites» é usado apenas para baixar imagens que bloqueiam hotlink (CORS), para o Photopea abri-las." },
+  "btnSave": { "message": "Salvar" },
+  "btnReset": { "message": "Restaurar padrão" },
+  "btnAddPreset": { "message": "+ Adicionar predefinição" },
+  "btnRemovePreset": { "message": "Remover predefinição" },
+  "newPresetName": { "message": "Nova predefinição" },
+  "footerText": { "message": "Clique com o botão direito em qualquer imagem → 🎨 Photopea" },
+  "presetNum": {
+    "message": "Predefinição $num$",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "labelName": { "message": "Nome" },
+  "labelIcon": { "message": "Ícone" },
+  "placeholderName": { "message": "Nome da predefinição" },
+  "labelWidth": { "message": "Largura" },
+  "labelHeight": { "message": "Altura" },
+  "labelDpi": { "message": "DPI" },
+  "toastSaveSuccess": { "message": "✓ Configurações salvas!" },
+  "toastReset": { "message": "↩ Predefinições e configurações restauradas" },
+  "errEnterName": {
+    "message": "Predefinição $num$: digite um nome",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidWidth": {
+    "message": "Predefinição $num$: largura inválida",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidHeight": {
+    "message": "Predefinição $num$: altura inválida",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errInvalidDpi": {
+    "message": "Predefinição $num$: DPI inválido",
+    "placeholders": { "num": { "content": "$1" } }
+  },
+  "errMinPresets": { "message": "Mantenha pelo menos uma predefinição" },
+  "alertManualCopy": { "message": "Não foi possível extrair a imagem automaticamente. Copie manualmente (botão direito → Copiar imagem) e cole no Photopea com Ctrl+V." },
+  "notifyNoImage": { "message": "Ainda não há imagem. Clique com o botão direito em uma imagem e use o atalho." },
+  "commandOpenDescription": { "message": "Abrir a última imagem no Photopea" },
+  "alertImageTooLargeCanvas": { "message": "Imagem grande demais para a URL da tela — aberta como está. Use Tamanho da imagem no Photopea se precisar." },
+  "alertCanvasPlaceFailed": { "message": "A imagem abriu no Photopea, mas a colocação automática na tela falhou. Você pode copiar/colar em um novo documento." }
 }
