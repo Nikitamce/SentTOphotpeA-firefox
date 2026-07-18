@@ -114,65 +114,46 @@ function openTab(url, openIn) {
 // ------ Image acquisition ------
 
 /**
- * Open image URL in a small background popup and screenshot it.
+ * Open image URL in a background tab and screenshot it.
  * Works when CORS blocks fetch (addons.mozilla.org etc.).
+ * (No "windows" permission — not valid on all Firefox builds.)
  */
 function fetchViaTabCapture(imageUrl) {
   var createdTabId = null;
-  var createdWinId = null;
 
-  return browser.windows.create({
+  return browser.tabs.create({
     url: imageUrl,
-    type: "popup",
-    width: 640,
-    height: 640,
-    // Keep it out of the way; still rendered so capture works
-    left: 40,
-    top: 40,
-    focused: false,
-    allowScriptsToClose: true
-  }).then(function (win) {
-    createdWinId = win.id;
-    var tab = win.tabs && win.tabs[0];
-    if (!tab) throw new Error("no tab in capture window");
+    active: false
+  }).then(function (tab) {
     createdTabId = tab.id;
     return waitTabComplete(tab.id, 20000).then(function () {
-      return delay(400);
+      return delay(500);
     }).then(function () {
-      // Prefer captureTab (Firefox 82+)
       if (browser.tabs.captureTab) {
         return browser.tabs.captureTab(tab.id, { format: "png" });
       }
-      return browser.tabs.captureVisibleTab(win.id, { format: "png" });
-    }).then(function (dataUrl) {
-      return stpAutoCropDataUrl(dataUrl).catch(function () {
-        return dataUrl;
+      // Fallback: briefly activate tab for captureVisibleTab
+      return browser.tabs.update(tab.id, { active: true }).then(function () {
+        return delay(200);
+      }).then(function () {
+        return browser.tabs.captureVisibleTab(tab.windowId, { format: "png" });
       });
+    }).then(function (dataUrl) {
+      return stpAutoCropDataUrl(dataUrl).catch(function () { return dataUrl; });
     });
   }).then(function (dataUrl) {
-    return cleanupCapture(createdWinId, createdTabId).then(function () {
+    return cleanupCapture(createdTabId).then(function () {
       if (!dataUrl || dataUrl.length < 100) throw new Error("empty capture");
       return dataUrl;
     });
   }).catch(function (err) {
-    return cleanupCapture(createdWinId, createdTabId).then(function () {
-      throw err;
-    });
+    return cleanupCapture(createdTabId).then(function () { throw err; });
   });
 }
 
-function cleanupCapture(winId, tabId) {
-  var p = Promise.resolve();
-  if (winId != null) {
-    p = p.then(function () {
-      return browser.windows.remove(winId).catch(function () { /* ignore */ });
-    });
-  } else if (tabId != null) {
-    p = p.then(function () {
-      return browser.tabs.remove(tabId).catch(function () { /* ignore */ });
-    });
-  }
-  return p;
+function cleanupCapture(tabId) {
+  if (tabId == null) return Promise.resolve();
+  return browser.tabs.remove(tabId).catch(function () { /* ignore */ });
 }
 
 /**
@@ -375,69 +356,71 @@ function getOrFetchDataUrl(imageUrl, tabId, pageUrl) {
 
 // ------ Open Photopea ------
 
-/**
- * Run a Photopea OE script in an already-open Photopea tab via postMessage.
- * Does not depend on a persistent content-script port.
- */
-function runPhotopeaScriptInTab(tabId, script, timeoutMs) {
-  timeoutMs = timeoutMs || 20000;
-  var injected =
-    "(function(){" +
-    "  var script = " + JSON.stringify(script) + ";" +
-    "  var timeoutMs = " + timeoutMs + ";" +
-    "  return new Promise(function(resolve){" +
-    "    var done = false;" +
-    "    function finish(ok){" +
-    "      if (done) return;" +
-    "      done = true;" +
-    "      try { window.removeEventListener('message', onMsg); } catch (e) {}" +
-    "      resolve(!!ok);" +
-    "    }" +
-    "    function onMsg(e){" +
-    "      if (e.data === 'done') finish(true);" +
-    "    }" +
-    "    window.addEventListener('message', onMsg);" +
-    "    try { window.postMessage(script, '*'); } catch (e) { finish(false); return; }" +
-    "    setTimeout(function(){ finish(true); }, timeoutMs);" +
-    "  });" +
-    "})();";
+function ensurePhotopeaBridge(tabId) {
+  return browser.tabs.executeScript(tabId, { file: "content/photopea-bridge.js" })
+    .catch(function () { /* may already be present via content_scripts */ });
+}
 
-  return browser.tabs.executeScript(tabId, { code: injected }).then(function (results) {
-    return !!(results && results[0]);
+/**
+ * Send OE script to Photopea tab via content-script message (preferred),
+ * with executeScript+postMessage fallback.
+ */
+function runPhotopeaScriptInTab(tabId, script, timeoutMs, attempt) {
+  timeoutMs = timeoutMs || 25000;
+  attempt = attempt || 0;
+
+  return ensurePhotopeaBridge(tabId).then(function () {
+    return browser.tabs.sendMessage(tabId, {
+      type: "stp-run-script",
+      script: script,
+      timeoutMs: timeoutMs
+    });
+  }).then(function (res) {
+    return !!(res && res.ok !== false);
+  }).catch(function (err) {
+    if (attempt < 10) {
+      return delay(400).then(function () {
+        return runPhotopeaScriptInTab(tabId, script, timeoutMs, attempt + 1);
+      });
+    }
+    // Last resort: inject inline runner
+    console.warn("STP: sendMessage failed, try executeScript", err);
+    var injected =
+      "(function(){" +
+      "  var script = " + JSON.stringify(script) + ";" +
+      "  return new Promise(function(resolve){" +
+      "    var done=false;" +
+      "    function finish(){ if(done)return; done=true;" +
+      "      window.removeEventListener('message',onMsg); resolve(true); }" +
+      "    function onMsg(e){ if(e.data==='done') finish(); }" +
+      "    window.addEventListener('message', onMsg);" +
+      "    try { window.postMessage(script,'*'); } catch(e) { resolve(false); return; }" +
+      "    setTimeout(finish, " + timeoutMs + ");" +
+      "  });" +
+      "})();";
+    return browser.tabs.executeScript(tabId, { code: injected }).then(function (results) {
+      return !!(results && results[0]);
+    }).catch(function () {
+      return false;
+    });
   });
 }
 
 /**
- * Wait until Photopea answers OE "done" (booted + ready for scripts).
- */
-function waitPhotopeaReady(tabId, maxMs) {
-  maxMs = maxMs || 25000;
-  var started = Date.now();
-
-  function attempt() {
-    return runPhotopeaScriptInTab(tabId, 'app.echoToOE("stp");', 2000).then(function (ok) {
-      if (ok) return true;
-      if (Date.now() - started > maxMs) return false;
-      return delay(500).then(attempt);
-    }).catch(function () {
-      if (Date.now() - started > maxMs) return false;
-      return delay(600).then(attempt);
-    });
-  }
-
-  // Let the page start loading first
-  return delay(600).then(attempt);
-}
-
-/**
- * Canvas flow that actually works:
- *  1) Open image the same way as "Open" (hash files — proven)
- *  2) Wait for Photopea ready
- *  3) Extra delay so the image document finishes opening
- *  4) postMessage place-on-canvas script
+ * Canvas: open image via hash, then force target size with resizeCanvas script.
+ * Also uses one-shot hash (files+script) when URI is small enough.
  */
 function openImageThenPlaceOnCanvas(dataUrl, width, height, options, openIn) {
-  var openUrl = stpBuildOpenUrl(dataUrl);
+  var placeScript = stpBuildCanvasPlaceScript(width, height, options);
+  var backupScript = typeof stpBuildCanvasCopyPasteScript === "function"
+    ? stpBuildCanvasCopyPasteScript(width, height, options)
+    : placeScript;
+
+  // One-shot: Photopea loads file then runs resizeCanvas — primary path
+  var oneShotUrl = stpBuildCanvasUrl(dataUrl, width, height, options);
+  var useOneShot = oneShotUrl.length < 1.8e6;
+
+  var openUrl = useOneShot ? oneShotUrl : stpBuildOpenUrl(dataUrl);
   if (openUrl.length > 1.8e6) {
     notifyError(
       browser.i18n.getMessage("alertImageTooLargeCanvas") ||
@@ -446,42 +429,44 @@ function openImageThenPlaceOnCanvas(dataUrl, width, height, options, openIn) {
     return openTab(stpBuildOpenUrl(dataUrl), openIn);
   }
 
-  var placeScript = stpBuildCanvasPlaceScript(width, height, options);
+  console.log("STP: canvas open", {
+    width: width,
+    height: height,
+    fitMode: options && options.fitMode,
+    oneShot: useOneShot,
+    urlLen: openUrl.length
+  });
 
   return openTab(openUrl, openIn).then(function (tab) {
     return waitTabComplete(tab.id, 45000).then(function () {
-      return waitPhotopeaReady(tab.id, 20000);
-    }).then(function (ready) {
-      console.log("STP: Photopea ready =", ready);
-      // Image decode / document create can lag behind first "done"
-      return delay(ready ? 1200 : 2800);
+      // Let Photopea boot + open the file from hash
+      return delay(useOneShot ? 2200 : 1800);
     }).then(function () {
-      // Nudge: ensure active document exists by no-op script, then place
-      return runPhotopeaScriptInTab(
-        tab.id,
-        "if (app.documents.length < 1) { app.echoToOE('nodoc'); } else { app.echoToOE('hasdoc'); }",
-        5000
-      );
-    }).then(function () {
-      return delay(400);
-    }).then(function () {
-      console.log("STP: running canvas place script");
-      return runPhotopeaScriptInTab(tab.id, placeScript, 25000);
+      // Reinforce placement (if one-shot script raced or failed)
+      console.log("STP: reinforce place script", width, "x", height);
+      return runPhotopeaScriptInTab(tab.id, placeScript, 20000);
     }).then(function (ok) {
-      console.log("STP: canvas place done =", ok);
-      if (!ok) {
-        notifyError(
-          browser.i18n.getMessage("alertCanvasPlaceFailed") ||
-          "Image opened, but placing on canvas failed. Try again or paste manually."
-        );
-      }
-      return tab;
+      console.log("STP: place script ok =", ok);
+      if (ok) return tab;
+      // Backup: copy/paste into new document of exact size
+      console.log("STP: trying copy/paste canvas script");
+      return delay(500).then(function () {
+        return runPhotopeaScriptInTab(tab.id, backupScript, 25000);
+      }).then(function (ok2) {
+        console.log("STP: copy/paste script ok =", ok2);
+        if (!ok2) {
+          notifyError(
+            browser.i18n.getMessage("alertCanvasPlaceFailed") ||
+            "Image opened, but canvas size could not be applied automatically."
+          );
+        }
+        return tab;
+      });
     }).catch(function (err) {
-      console.error("STP: canvas two-step failed", err);
-      // Image should already be open in the tab — better than empty canvas
+      console.error("STP: canvas flow error", err);
       notifyError(
         browser.i18n.getMessage("alertCanvasPlaceFailed") ||
-        "Could not place on canvas automatically. Image should still be open in Photopea."
+        "Could not apply canvas size. Image should still be open."
       );
       return tab;
     });
@@ -505,10 +490,6 @@ function openInPhotopea(payload) {
       return openTab(STP.PHOTOPEA_ORIGIN, openIn);
     }
 
-    if (dataUrl.length > 1500000) {
-      console.warn("STP: data URL large (" + dataUrl.length + ")");
-    }
-
     if (payload.mode === "open") {
       var openUrl = stpBuildOpenUrl(dataUrl);
       if (openUrl.length > 1.8e6) {
@@ -522,7 +503,6 @@ function openInPhotopea(payload) {
     }
 
     if (payload.mode === "canvas") {
-      // Two-step: open image (works) → then place on canvas via OE script
       return openImageThenPlaceOnCanvas(
         dataUrl,
         payload.width,

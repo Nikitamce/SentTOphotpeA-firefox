@@ -1,69 +1,178 @@
 // ============================================================
-// Build Photopea hash URLs for small images (shared helpers)
+// Build Photopea hash URLs + canvas placement scripts
 // ============================================================
 
 function stpFillEnum(fill) {
-  if (fill === "transparent") return "DocumentFill.TRANSPARENT";
-  // Photopea/PS API has no DocumentFill.BLACK — use WHITE then fill script if needed
-  return "DocumentFill.WHITE";
+  // Prefer string tokens Photopea accepts in documents.add
+  if (fill === "transparent") return '"TRANSPARENT"';
+  if (fill === "black") return '"BLACK"';
+  return '"WHITE"';
 }
 
 function stpBlackFillScript(fill) {
   if (fill !== "black") return "";
+  // Fallback if documents.add ignore BLACK
   return [
-    "var __c = new SolidColor();",
-    "__c.rgb.red = 0; __c.rgb.green = 0; __c.rgb.blue = 0;",
-    "app.activeDocument.selection.selectAll();",
-    "app.activeDocument.selection.fill(__c);",
-    "app.activeDocument.selection.deselect();"
+    "try {",
+    "  var __c = new SolidColor();",
+    "  __c.rgb.red = 0; __c.rgb.green = 0; __c.rgb.blue = 0;",
+    "  app.activeDocument.selection.selectAll();",
+    "  app.activeDocument.selection.fill(__c);",
+    "  app.activeDocument.selection.deselect();",
+    "} catch (__e) {}"
   ].join("\n");
 }
 
-function stpBuildScaleScript(fitMode) {
-  if (!fitMode || fitMode === "center") {
+function stpSetBackgroundScript(fill) {
+  if (fill === "black") {
     return [
-      "var doc = app.activeDocument;",
-      "var layer = doc.activeLayer;",
-      "var b = layer.bounds;",
-      "var lw = b[2].value - b[0].value;",
-      "var lh = b[3].value - b[1].value;",
-      "var dx = (doc.width.value - lw) / 2 - b[0].value;",
-      "var dy = (doc.height.value - lh) / 2 - b[1].value;",
-      "layer.translate(dx, dy);"
+      "try {",
+      "  app.backgroundColor.rgb.red = 0;",
+      "  app.backgroundColor.rgb.green = 0;",
+      "  app.backgroundColor.rgb.blue = 0;",
+      "} catch (__e) {}"
     ].join("\n");
   }
-  if (fitMode === "stretch") {
-    return [
-      "var doc = app.activeDocument;",
-      "var layer = doc.activeLayer;",
-      "var b = layer.bounds;",
-      "var lw = Math.max(1, b[2].value - b[0].value);",
-      "var lh = Math.max(1, b[3].value - b[1].value);",
-      "var sx = doc.width.value / lw * 100;",
-      "var sy = doc.height.value / lh * 100;",
-      "layer.resize(sx, sy, AnchorPosition.TOPLEFT);",
-      "b = layer.bounds;",
-      "layer.translate(-b[0].value, -b[1].value);"
-    ].join("\n");
+  if (fill === "transparent") {
+    return ""; // handled via resizeCanvas / new doc
   }
-  var useMax = fitMode === "fill";
   return [
-    "var doc = app.activeDocument;",
-    "var layer = doc.activeLayer;",
-    "var b = layer.bounds;",
-    "var lw = Math.max(1, b[2].value - b[0].value);",
-    "var lh = Math.max(1, b[3].value - b[1].value);",
-    "var sx = doc.width.value / lw;",
-    "var sy = doc.height.value / lh;",
-    "var s = (" + (useMax ? "Math.max" : "Math.min") + "(sx, sy)) * 100;",
-    "layer.resize(s, s, AnchorPosition.TOPLEFT);",
-    "b = layer.bounds;",
-    "lw = b[2].value - b[0].value;",
-    "lh = b[3].value - b[1].value;",
-    "var dx = (doc.width.value - lw) / 2 - b[0].value;",
-    "var dy = (doc.height.value - lh) / 2 - b[1].value;",
-    "layer.translate(dx, dy);"
+    "try {",
+    "  app.backgroundColor.rgb.red = 255;",
+    "  app.backgroundColor.rgb.green = 255;",
+    "  app.backgroundColor.rgb.blue = 255;",
+    "} catch (__e) {}"
   ].join("\n");
+}
+
+/**
+ * Place the already-open image onto a target canvas size.
+ * Uses resizeImage + resizeCanvas on the current document (no copy/paste race).
+ *
+ * fitMode:
+ *  - center  : keep pixel size, only expand/crop canvas
+ *  - fit     : scale to fit inside target, then canvas = target
+ *  - fill    : scale to cover target, then canvas = target (may crop)
+ *  - stretch : force exact target size (distort)
+ */
+function stpBuildCanvasPlaceScript(width, height, options) {
+  options = options || {};
+  var fitMode = options.fitMode || "center";
+  var fillMode = options.fill || "white";
+  var w = Math.max(1, parseInt(width, 10) || 1920);
+  var h = Math.max(1, parseInt(height, 10) || 1080);
+
+  var parts = [];
+  parts.push("if (app.documents.length < 1) { throw 'STP: no document'; }");
+  parts.push("var doc = app.activeDocument;");
+  parts.push("var tw = " + w + ";");
+  parts.push("var th = " + h + ";");
+  parts.push(stpSetBackgroundScript(fillMode));
+
+  if (fitMode === "stretch") {
+    parts.push("doc.resizeImage(tw, th);");
+    parts.push('doc.resizeCanvas(tw, th, "middlecenter");');
+  } else if (fitMode === "fit") {
+    // scale uniformly to fit inside
+    parts.push("var dw = doc.width.value;");
+    parts.push("var dh = doc.height.value;");
+    parts.push("var s = Math.min(tw / dw, th / dh);");
+    parts.push("doc.resizeImage(Math.max(1, Math.round(dw * s)), Math.max(1, Math.round(dh * s)));");
+    parts.push('doc.resizeCanvas(tw, th, "middlecenter");');
+  } else if (fitMode === "fill") {
+    // scale uniformly to cover
+    parts.push("var dw = doc.width.value;");
+    parts.push("var dh = doc.height.value;");
+    parts.push("var s = Math.max(tw / dw, th / dh);");
+    parts.push("doc.resizeImage(Math.max(1, Math.round(dw * s)), Math.max(1, Math.round(dh * s)));");
+    parts.push('doc.resizeCanvas(tw, th, "middlecenter");');
+  } else {
+    // center: keep image pixels, change canvas size only
+    parts.push('doc.resizeCanvas(tw, th, "middlecenter");');
+  }
+
+  // Optional transparent: try to convert background if Photopea supports it
+  if (fillMode === "transparent") {
+    parts.push("try { doc.layers[doc.layers.length-1].isBackgroundLayer = false; } catch (__e2) {}");
+  }
+
+  return parts.filter(Boolean).join("\n");
+}
+
+/**
+ * Legacy copy/paste into a new document (backup method).
+ */
+function stpBuildCanvasCopyPasteScript(width, height, options) {
+  options = options || {};
+  var dpi = options.dpi || 72;
+  var fitMode = options.fitMode || "center";
+  var fillMode = options.fill || "white";
+  var w = Math.max(1, parseInt(width, 10) || 1920);
+  var h = Math.max(1, parseInt(height, 10) || 1080);
+  var docFill = stpFillEnum(fillMode);
+
+  return [
+    "if (app.documents.length < 1) { throw 'STP: no document'; }",
+    "var src = app.activeDocument;",
+    "try { src.flatten(); } catch (__f) {}",
+    "src.selection.selectAll();",
+    "try { src.selection.copy(); } catch (__c1) { src.activeLayer.copy(); }",
+    // Simple documents.add — Photopea accepts (w,h,res,name)
+    "app.documents.add(" + w + ", " + h + ", " + dpi + ", 'Canvas');",
+    stpBlackFillScript(fillMode),
+    "app.activeDocument.paste();",
+    // Scale pasted layer
+    (function () {
+      if (fitMode === "center") {
+        return [
+          "var doc = app.activeDocument;",
+          "var layer = doc.activeLayer;",
+          "var b = layer.bounds;",
+          "var lw = b[2].value - b[0].value;",
+          "var lh = b[3].value - b[1].value;",
+          "var dx = (doc.width.value - lw) / 2 - b[0].value;",
+          "var dy = (doc.height.value - lh) / 2 - b[1].value;",
+          "layer.translate(dx, dy);"
+        ].join("\n");
+      }
+      if (fitMode === "stretch") {
+        return [
+          "var doc = app.activeDocument;",
+          "var layer = doc.activeLayer;",
+          "var b = layer.bounds;",
+          "var lw = Math.max(1, b[2].value - b[0].value);",
+          "var lh = Math.max(1, b[3].value - b[1].value);",
+          "layer.resize(doc.width.value / lw * 100, doc.height.value / lh * 100);",
+          "b = layer.bounds;",
+          "layer.translate(-b[0].value, -b[1].value);"
+        ].join("\n");
+      }
+      var useMax = fitMode === "fill";
+      return [
+        "var doc = app.activeDocument;",
+        "var layer = doc.activeLayer;",
+        "var b = layer.bounds;",
+        "var lw = Math.max(1, b[2].value - b[0].value);",
+        "var lh = Math.max(1, b[3].value - b[1].value);",
+        "var sx = doc.width.value / lw;",
+        "var sy = doc.height.value / lh;",
+        "var s = (" + (useMax ? "Math.max" : "Math.min") + "(sx, sy)) * 100;",
+        "layer.resize(s, s);",
+        "b = layer.bounds;",
+        "lw = b[2].value - b[0].value;",
+        "lh = b[3].value - b[1].value;",
+        "layer.translate((doc.width.value - lw) / 2 - b[0].value, (doc.height.value - lh) / 2 - b[1].value);"
+      ].join("\n");
+    })(),
+    // Close other documents (source image)
+    "for (var __i = app.documents.length - 1; __i >= 0; __i--) {",
+    "  try {",
+    "    if (app.documents[__i] !== app.activeDocument) {",
+    "      app.documents[__i].close(SaveOptions.DONOTSAVECHANGES);",
+    "    }",
+    "  } catch (__e) {}",
+    "}"
+  ].filter(Boolean).join("\n");
 }
 
 function stpBuildOpenUrl(imageUrl) {
@@ -71,38 +180,8 @@ function stpBuildOpenUrl(imageUrl) {
   return "https://www.photopea.com#" + encodeURIComponent(JSON.stringify(config));
 }
 
-/**
- * Script that runs AFTER an image document is already open in Photopea.
- * Copy → new canvas → paste → fit → close source.
- */
-function stpBuildCanvasPlaceScript(width, height, options) {
-  options = options || {};
-  var dpi = options.dpi || 72;
-  var fitMode = options.fitMode || "center";
-  var fillMode = options.fill || "white";
-  var docFill = stpFillEnum(fillMode);
-
-  return [
-    // Guard: need at least one open document (the image)
-    "if (app.documents.length < 1) { throw 'STP: no document open'; }",
-    "var src = app.activeDocument;",
-    "src.selection.selectAll();",
-    "src.activeLayer.copy();",
-    "app.documents.add(" + width + ", " + height + ", " + dpi +
-      ", \"Canvas\", NewDocumentMode.RGB, " + docFill + ");",
-    stpBlackFillScript(fillMode),
-    "app.activeDocument.paste();",
-    stpBuildScaleScript(fitMode),
-    // Close the original image document (not the new canvas)
-    "for (var __i = app.documents.length - 1; __i >= 0; __i--) {",
-    "  var __d = app.documents[__i];",
-    "  if (__d !== app.activeDocument) { try { __d.close(SaveOptions.DONOTSAVECHANGES); } catch (__e) {} }",
-    "}"
-  ].filter(Boolean).join("\n");
-}
-
 function stpBuildCanvasUrl(imageUrl, width, height, options) {
-  // Legacy one-shot hash (unreliable race). Prefer two-step open + place script.
+  // One-shot: open file then place (Photopea runs script after files load)
   var script = stpBuildCanvasPlaceScript(width, height, options);
   var config = { files: [imageUrl], script: script };
   return "https://www.photopea.com#" + encodeURIComponent(JSON.stringify(config));
@@ -111,12 +190,12 @@ function stpBuildCanvasUrl(imageUrl, width, height, options) {
 function stpBuildBlankUrl(width, height, options) {
   options = options || {};
   var dpi = options.dpi || 72;
-  var fillMode = options.fill || "white";
-  var docFill = stpFillEnum(fillMode);
-  var script = [
-    "app.documents.add(" + width + ", " + height + ", " + dpi +
-      ", \"Canvas\", NewDocumentMode.RGB, " + docFill + ");",
-    stpBlackFillScript(fillMode)
-  ].filter(Boolean).join("\n");
+  var w = Math.max(1, parseInt(width, 10) || 1920);
+  var h = Math.max(1, parseInt(height, 10) || 1080);
+  // Keep script minimal — works in hash without enums
+  var script = "app.documents.add(" + w + ", " + h + ", " + dpi + ", 'Canvas');";
+  if (options.fill === "black") {
+    script += "\n" + stpBlackFillScript("black");
+  }
   return "https://www.photopea.com#" + encodeURIComponent(JSON.stringify({ script: script }));
 }
