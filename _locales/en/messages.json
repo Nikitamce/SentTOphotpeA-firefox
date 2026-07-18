@@ -1,0 +1,120 @@
+{
+  "extensionName": {
+    "message": "Send to Photopea"
+  },
+  "extensionDescription": {
+    "message": "Send images to Photopea from context menu - open as is or paste onto a custom canvas"
+  },
+  "menuParent": {
+    "message": "🎨 Photopea"
+  },
+  "menuOpen": {
+    "message": "📷 Open image"
+  },
+  "menuPreset": {
+    "message": "🖼 To canvas: $name$ ($width$×$height$)",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "width": {
+        "content": "$2"
+      },
+      "height": {
+        "content": "$3"
+      }
+    }
+  },
+  "popupSubtitle": {
+    "message": "Right click on image → 🎨 Photopea"
+  },
+  "presetsHeading": {
+    "message": "Canvas Presets"
+  },
+  "btnSettings": {
+    "message": "Settings"
+  },
+  "emptyPresets": {
+    "message": "No active presets. Open settings to add."
+  },
+  "statusActive": {
+    "message": "Active"
+  },
+  "statusDisabled": {
+    "message": "Disabled"
+  },
+  "optionsTitle": {
+    "message": "Send to Photopea — Settings"
+  },
+  "optionsHeaderSubtitle": {
+    "message": "v1.0.0 — Extension Settings"
+  },
+  "optionsSectionHeading": {
+    "message": "Canvas Presets"
+  },
+  "optionsSectionDesc": {
+    "message": "Configure up to 5 canvas size presets. Active presets will appear in the context menu when right-clicking an image."
+  },
+  "btnSave": {
+    "message": "Save"
+  },
+  "btnReset": {
+    "message": "Reset to default"
+  },
+  "footerText": {
+    "message": "Use right click on any image → 🎨 Photopea"
+  },
+  "presetNum": {
+    "message": "Preset $num$",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "labelName": {
+    "message": "Name"
+  },
+  "placeholderName": {
+    "message": "Preset name"
+  },
+  "labelWidth": {
+    "message": "Width"
+  },
+  "labelHeight": {
+    "message": "Height"
+  },
+  "toastSaveSuccess": {
+    "message": "✓ Settings saved!"
+  },
+  "toastReset": {
+    "message": "↩ Presets reset to default"
+  },
+  "errEnterName": {
+    "message": "Preset $num$: enter name",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "errInvalidWidth": {
+    "message": "Preset $num$: invalid width",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "errInvalidHeight": {
+    "message": "Preset $num$: invalid height",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "alertManualCopy": {
+    "message": "Failed to automatically extract the image. Please copy it manually (right-click -> 'Copy Image') and paste into Photopea via Ctrl+V."
+  }
+}

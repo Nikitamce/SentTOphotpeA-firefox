@@ -1,0 +1,120 @@
+{
+  "extensionName": {
+    "message": "إرسال إلى Photopea"
+  },
+  "extensionDescription": {
+    "message": "أرسل الصور إلى Photopea من القائمة السياقية - افتحها كما هي أو ألصقها على لوحة رسم مخصصة"
+  },
+  "menuParent": {
+    "message": "🎨 Photopea"
+  },
+  "menuOpen": {
+    "message": "📷 فتح الصورة"
+  },
+  "menuPreset": {
+    "message": "🖼 إلى لوحة الرسم: $name$ ($width$×$height$)",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "width": {
+        "content": "$2"
+      },
+      "height": {
+        "content": "$3"
+      }
+    }
+  },
+  "popupSubtitle": {
+    "message": "نقرة يمينية على الصورة → 🎨 Photopea"
+  },
+  "presetsHeading": {
+    "message": "قوالب لوحة الرسم"
+  },
+  "btnSettings": {
+    "message": "الإعدادات"
+  },
+  "emptyPresets": {
+    "message": "لا توجد قوالب نشطة. افتح الإعدادات لإضافة قوالب."
+  },
+  "statusActive": {
+    "message": "نشط"
+  },
+  "statusDisabled": {
+    "message": "معطل"
+  },
+  "optionsTitle": {
+    "message": "إرسال إلى Photopea — الإعدادات"
+  },
+  "optionsHeaderSubtitle": {
+    "message": "v1.0.0 — إعدادات الإضافة"
+  },
+  "optionsSectionHeading": {
+    "message": "قوالب لوحة الرسم"
+  },
+  "optionsSectionDesc": {
+    "message": "قم بتكوين ما يصل إلى 5 قوالب لأحجام لوحة الرسم. ستظهر القوالب النشطة في القائمة السياقية عند النقر بزر الماوس الأيمن فوق الصورة."
+  },
+  "btnSave": {
+    "message": "حفظ"
+  },
+  "btnReset": {
+    "message": "إعادة تعيين للافتراضي"
+  },
+  "footerText": {
+    "message": "انقر بزر الماوس الأيمن على أي صورة → 🎨 Photopea"
+  },
+  "presetNum": {
+    "message": "قالب $num$",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "labelName": {
+    "message": "الاسم"
+  },
+  "placeholderName": {
+    "message": "اسم القالب"
+  },
+  "labelWidth": {
+    "message": "العرض"
+  },
+  "labelHeight": {
+    "message": "الارتفاع"
+  },
+  "toastSaveSuccess": {
+    "message": "✓ تم حفظ الإعدادات!"
+  },
+  "toastReset": {
+    "message": "↩ تم إعادة تعيين القوالب للافتراضي"
+  },
+  "errEnterName": {
+    "message": "قالب $num$: يرجى إدخال اسم",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "errInvalidWidth": {
+    "message": "قالب $num$: العرض غير صالح",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "errInvalidHeight": {
+    "message": "قالب $num$: الارتفاع غير صالح",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "alertManualCopy": {
+    "message": "فشل استخراج الصورة تلقائيًا. يرجى نسخها يدويًا (نقرة يمينية -> \"نسخ الصورة\") ولصقها في Photopea عبر Ctrl+V."
+  }
+}

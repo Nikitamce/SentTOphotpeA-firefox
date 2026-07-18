@@ -1,0 +1,120 @@
+{
+  "extensionName": {
+    "message": "Invia a Photopea"
+  },
+  "extensionDescription": {
+    "message": "Invia le immagini a Photopea dal menu contestuale: apri così com'è o incolla su una tela personalizzata"
+  },
+  "menuParent": {
+    "message": "🎨 Photopea"
+  },
+  "menuOpen": {
+    "message": "📷 Apri immagine"
+  },
+  "menuPreset": {
+    "message": "🖼 Sulla tela: $name$ ($width$×$height$)",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "width": {
+        "content": "$2"
+      },
+      "height": {
+        "content": "$3"
+      }
+    }
+  },
+  "popupSubtitle": {
+    "message": "Tasto destro sull'immagine → 🎨 Photopea"
+  },
+  "presetsHeading": {
+    "message": "Preset di tela"
+  },
+  "btnSettings": {
+    "message": "Impostazioni"
+  },
+  "emptyPresets": {
+    "message": "Nessun preset attivo. Apri le impostazioni per aggiungerne."
+  },
+  "statusActive": {
+    "message": "Attivo"
+  },
+  "statusDisabled": {
+    "message": "Disattivato"
+  },
+  "optionsTitle": {
+    "message": "Invia a Photopea — Impostazioni"
+  },
+  "optionsHeaderSubtitle": {
+    "message": "v1.0.0 — Impostazioni dell'estensione"
+  },
+  "optionsSectionHeading": {
+    "message": "Preset di tela"
+  },
+  "optionsSectionDesc": {
+    "message": "Configura fino a 5 preset di dimensioni della tela. I preset attivi appariranno nel menu contestuale al clic destro."
+  },
+  "btnSave": {
+    "message": "Salva"
+  },
+  "btnReset": {
+    "message": "Ripristina predefiniti"
+  },
+  "footerText": {
+    "message": "Tasto destro su qualsiasi immagine → 🎨 Photopea"
+  },
+  "presetNum": {
+    "message": "Preset $num$",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "labelName": {
+    "message": "Nome"
+  },
+  "placeholderName": {
+    "message": "Nome del preset"
+  },
+  "labelWidth": {
+    "message": "Larghezza"
+  },
+  "labelHeight": {
+    "message": "Altezza"
+  },
+  "toastSaveSuccess": {
+    "message": "✓ Impostazioni salvate!"
+  },
+  "toastReset": {
+    "message": "↩ Preset ripristinati ai valori predefiniti"
+  },
+  "errEnterName": {
+    "message": "Preset $num$: inserisci un nome",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "errInvalidWidth": {
+    "message": "Preset $num$: larghezza non valida",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "errInvalidHeight": {
+    "message": "Preset $num$: altezza non valida",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "alertManualCopy": {
+    "message": "Impossibile estrarre l'immagine automaticamente. Copiala manualmente (tasto destro -> 'Copia immagine') e incollala in Photopea con Ctrl+V."
+  }
+}

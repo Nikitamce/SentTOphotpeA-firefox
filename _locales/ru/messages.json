@@ -1,0 +1,120 @@
+{
+  "extensionName": {
+    "message": "Send to Photopea"
+  },
+  "extensionDescription": {
+    "message": "Отправляйте изображения в Photopea прямо из контекстного меню — откройте как есть или вставьте на настраиваемый холст"
+  },
+  "menuParent": {
+    "message": "🎨 Photopea"
+  },
+  "menuOpen": {
+    "message": "📷 Открыть изображение"
+  },
+  "menuPreset": {
+    "message": "🖼 На холст: $name$ ($width$×$height$)",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "width": {
+        "content": "$2"
+      },
+      "height": {
+        "content": "$3"
+      }
+    }
+  },
+  "popupSubtitle": {
+    "message": "Правый клик по изображению → 🎨 Photopea"
+  },
+  "presetsHeading": {
+    "message": "Пресеты холста"
+  },
+  "btnSettings": {
+    "message": "Настройки"
+  },
+  "emptyPresets": {
+    "message": "Нет активных пресетов. Откройте настройки, чтобы добавить."
+  },
+  "statusActive": {
+    "message": "Активен"
+  },
+  "statusDisabled": {
+    "message": "Выключен"
+  },
+  "optionsTitle": {
+    "message": "Send to Photopea — Настройки"
+  },
+  "optionsHeaderSubtitle": {
+    "message": "v1.0.0 — Настройки расширения"
+  },
+  "optionsSectionHeading": {
+    "message": "Пресеты холста"
+  },
+  "optionsSectionDesc": {
+    "message": "Настройте до 5 пресетов размеров холста. Активные пресеты появятся в контекстном меню при правом клике на изображение."
+  },
+  "btnSave": {
+    "message": "Сохранить"
+  },
+  "btnReset": {
+    "message": "Сбросить по умолчанию"
+  },
+  "footerText": {
+    "message": "Используйте правый клик на любом изображении → 🎨 Photopea"
+  },
+  "presetNum": {
+    "message": "Пресет $num$",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "labelName": {
+    "message": "Название"
+  },
+  "placeholderName": {
+    "message": "Название пресета"
+  },
+  "labelWidth": {
+    "message": "Ширина"
+  },
+  "labelHeight": {
+    "message": "Высота"
+  },
+  "toastSaveSuccess": {
+    "message": "✓ Настройки сохранены!"
+  },
+  "toastReset": {
+    "message": "↩ Пресеты сброшены по умолчанию"
+  },
+  "errEnterName": {
+    "message": "Пресет $num$: введите название",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "errInvalidWidth": {
+    "message": "Пресет $num$: некорректная ширина",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "errInvalidHeight": {
+    "message": "Пресет $num$: некорректная высота",
+    "placeholders": {
+      "num": {
+        "content": "$1"
+      }
+    }
+  },
+  "alertManualCopy": {
+    "message": "Не удалось автоматически извлечь изображение. Пожалуйста, скопируйте его вручную (правый клик -> 'Копировать изображение') и вставьте в Photopea через Ctrl+V."
+  }
+}
