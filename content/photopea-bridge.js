@@ -11,7 +11,8 @@
   }
 
   function waitForDone(timeoutMs) {
-    timeoutMs = timeoutMs || 30000;
+    // Keep short so reinforce scripts never freeze the extension UX
+    timeoutMs = Math.min(timeoutMs || 12000, 20000);
     return new Promise(function (resolve) {
       var finished = false;
       function finish(ok) {
@@ -29,7 +30,7 @@
   }
 
   function runScript(script, timeoutMs) {
-    var p = waitForDone(timeoutMs || 30000);
+    var p = waitForDone(timeoutMs || 12000);
     try {
       window.postMessage(String(script), "*");
     } catch (e) {
@@ -38,13 +39,8 @@
     return p;
   }
 
-  /**
-   * Wait until Photopea is ready (first "done" or successful echo).
-   */
   function waitReady(maxMs) {
-    maxMs = maxMs || 30000;
-    var started = Date.now();
-
+    maxMs = Math.min(maxMs || 15000, 20000);
     return new Promise(function (resolve) {
       var finished = false;
       function finish(ok) {
@@ -57,32 +53,24 @@
         if (e.data === "done") finish(true);
       }
       window.addEventListener("message", onMessage);
-
-      // Photopea sends "done" when ready; also probe
-      function probe() {
-        if (finished) return;
-        try {
-          window.postMessage('app.echoToOE("stp-ready");', "*");
-        } catch (e) { /* ignore */ }
-        if (Date.now() - started > maxMs) {
-          finish(true); // try anyway
-          return;
-        }
-        setTimeout(probe, 600);
-      }
-      setTimeout(probe, 400);
+      try {
+        window.postMessage('app.echoToOE("stp-ready");', "*");
+      } catch (e) { /* ignore */ }
+      // Always resolve reasonably soon so callers are not stuck
       setTimeout(function () { finish(true); }, maxMs);
     });
   }
 
-  /**
-   * Open a binary file in Photopea (ArrayBuffer OE API).
-   */
   function openArrayBuffer(buffer, timeoutMs) {
-    timeoutMs = timeoutMs || 60000;
+    timeoutMs = Math.min(timeoutMs || 20000, 30000);
     var p = waitForDone(timeoutMs);
     try {
-      window.postMessage(buffer, "*");
+      // Prefer transferring a copy so the buffer is not detached for the caller
+      var copy = buffer;
+      if (buffer instanceof ArrayBuffer) {
+        copy = buffer.slice(0);
+      }
+      window.postMessage(copy, "*");
     } catch (e) {
       console.warn("STP postMessage ArrayBuffer failed", e);
     }

@@ -376,20 +376,26 @@ function getOrFetchDataUrl(imageUrl, tabId, pageUrl) {
   });
 }
 
-// ------ Open Photopea (Live Messaging + environment) ------
+// ------ Open Photopea (hash primary + environment; messaging for reinforce/export) ------
+
+/** Max data-URL length for hash open (stay under browser URL limits) */
+var STP_HASH_SAFE = 1400000;
 
 function ensurePhotopeaBridge(tabId) {
   return browser.tabs.executeScript(tabId, { file: "content/photopea-bridge.js" })
-    .catch(function () { /* may already be present via content_scripts */ });
+    .catch(function () { /* already injected or restricted */ });
 }
 
+/**
+ * Quick message to content script. Few short retries only (never hang minutes).
+ */
 function sendToBridge(tabId, message, attempt) {
   attempt = attempt || 0;
   return ensurePhotopeaBridge(tabId).then(function () {
     return browser.tabs.sendMessage(tabId, message);
   }).catch(function (err) {
-    if (attempt < 12) {
-      return delay(350).then(function () {
+    if (attempt < 6) {
+      return delay(300).then(function () {
         return sendToBridge(tabId, message, attempt + 1);
       });
     }
@@ -398,39 +404,17 @@ function sendToBridge(tabId, message, attempt) {
 }
 
 function runPhotopeaScriptInTab(tabId, script, timeoutMs) {
-  timeoutMs = timeoutMs || 25000;
+  timeoutMs = timeoutMs || 15000;
   return sendToBridge(tabId, {
     type: "stp-run-script",
     script: script,
     timeoutMs: timeoutMs
   }).then(function (res) {
     return !!(res && res.ok !== false);
-  }).catch(function () {
+  }).catch(function (err) {
+    console.warn("STP: run script failed", err);
     return false;
   });
-}
-
-function waitPhotopeaReady(tabId) {
-  return sendToBridge(tabId, { type: "stp-wait-ready", timeoutMs: 30000 })
-    .then(function (res) { return !!(res && res.ok !== false); })
-    .catch(function () { return false; });
-}
-
-function openBufferInPhotopea(tabId, arrayBuffer) {
-  return sendToBridge(tabId, {
-    type: "stp-open-buffer",
-    buffer: arrayBuffer,
-    timeoutMs: 60000
-  }).then(function (res) {
-    return !!(res && res.ok);
-  });
-}
-
-function dataUrlToArrayBufferSafe(dataUrl) {
-  if (typeof stpDataUrlToArrayBuffer === "function") {
-    return stpDataUrlToArrayBuffer(dataUrl);
-  }
-  return fetch(dataUrl).then(function (r) { return r.arrayBuffer(); });
 }
 
 function reinforceCenterAndFit(tabId) {
@@ -446,104 +430,95 @@ function reinforceCenterAndFit(tabId) {
   ].filter(Boolean).join("\n");
 
   return runPhotopeaScriptInTab(tabId, centerOnlyScript, 12000).then(function () {
-    return delay(350);
+    return delay(300);
   }).then(function () {
-    return runPhotopeaScriptInTab(tabId, fitOnlyScript, 8000);
+    return runPhotopeaScriptInTab(tabId, fitOnlyScript, 6000);
   }).then(function () {
-    return delay(250);
+    return delay(200);
   }).then(function () {
-    return runPhotopeaScriptInTab(tabId, fitOnlyScript, 5000);
-  });
+    return runPhotopeaScriptInTab(tabId, fitOnlyScript, 4000);
+  }).catch(function () { /* non-fatal */ });
 }
 
 /**
- * Primary path: start URL with environment → wait ready → ArrayBuffer → scripts
- * Fallback: classic hash with files (+ environment)
+ * Proven path: open Photopea with files (+ script/env) in the URL hash immediately.
+ * Then optionally reinforce canvas placement via Live Messaging scripts.
  */
-function openViaLiveMessaging(dataUrl, mode, canvasOpts, settings) {
-  var openIn = settings.openIn;
-  var startUrl = typeof stpBuildStartUrl === "function"
-    ? stpBuildStartUrl(settings)
-    : (STP.PHOTOPEA_ORIGIN + "/");
-
-  return dataUrlToArrayBufferSafe(dataUrl).then(function (arrayBuffer) {
-    console.log("STP: messaging open, buffer bytes=", arrayBuffer && arrayBuffer.byteLength);
-
-    return openTab(startUrl, openIn).then(function (tab) {
-      return waitTabComplete(tab.id, 45000).then(function () {
-        return delay(800);
-      }).then(function () {
-        return waitPhotopeaReady(tab.id);
-      }).then(function (ready) {
-        console.log("STP: Photopea ready=", ready);
-        return openBufferInPhotopea(tab.id, arrayBuffer);
-      }).then(function (opened) {
-        console.log("STP: buffer opened=", opened);
-        if (!opened) throw new Error("ArrayBuffer open failed");
-        return delay(500);
-      }).then(function () {
-        if (mode !== "canvas") {
-          return reinforceCenterAndFit(tab.id).then(function () { return tab; });
-        }
-        var placeScript = stpBuildCanvasPlaceScript(
-          canvasOpts.width, canvasOpts.height, canvasOpts
-        );
-        var backupScript = typeof stpBuildCanvasCopyPasteScript === "function"
-          ? stpBuildCanvasCopyPasteScript(canvasOpts.width, canvasOpts.height, canvasOpts)
-          : placeScript;
-
-        return runPhotopeaScriptInTab(tab.id, placeScript, 25000).then(function (ok) {
-          console.log("STP: place script ok=", ok);
-          if (!ok) {
-            return runPhotopeaScriptInTab(tab.id, backupScript, 25000);
-          }
-        }).then(function () {
-          return reinforceCenterAndFit(tab.id);
-        }).then(function () {
-          return tab;
-        });
-      });
-    });
-  });
-}
-
-function openViaHashFallback(dataUrl, mode, canvasOpts, settings) {
-  var openIn = settings.openIn;
+function openViaHash(dataUrl, mode, canvasOpts, settings) {
+  var openIn = settings.openIn || "newTab";
   var opts = canvasOpts || {};
 
   if (mode === "canvas") {
     var canvasUrl = stpBuildCanvasUrl(
       dataUrl, opts.width, opts.height, opts, settings
     );
+    console.log("STP: hash canvas url length=", canvasUrl.length);
+
     if (canvasUrl.length > 1.8e6) {
-      notifyError(t("alertImageTooLargeCanvas") || "Image too large for URL.");
-      return openTab(stpBuildOpenUrl(dataUrl, settings), openIn);
+      // Try open-only hash, then place via script
+      var openOnly = stpBuildOpenUrl(dataUrl, settings);
+      if (openOnly.length > 1.8e6) {
+        notifyError(t("alertImageTooLargeCanvas") || "Image too large for URL method.");
+        return openTab(
+          typeof stpBuildStartUrl === "function" ? stpBuildStartUrl(settings) : STP.PHOTOPEA_ORIGIN,
+          openIn
+        );
+      }
+      return openTab(openOnly, openIn).then(function (tab) {
+        return waitTabComplete(tab.id, 45000).then(function () {
+          return delay(2000);
+        }).then(function () {
+          var place = stpBuildCanvasPlaceScript(opts.width, opts.height, opts);
+          var backup = typeof stpBuildCanvasCopyPasteScript === "function"
+            ? stpBuildCanvasCopyPasteScript(opts.width, opts.height, opts)
+            : place;
+          return runPhotopeaScriptInTab(tab.id, place, 15000).then(function (ok) {
+            if (!ok) return runPhotopeaScriptInTab(tab.id, backup, 15000);
+          });
+        }).then(function () {
+          return reinforceCenterAndFit(tab.id);
+        }).then(function () { return tab; });
+      });
     }
+
     return openTab(canvasUrl, openIn).then(function (tab) {
       return waitTabComplete(tab.id, 45000).then(function () {
         return delay(2200);
       }).then(function () {
-        return runPhotopeaScriptInTab(
-          tab.id,
-          stpBuildCanvasPlaceScript(opts.width, opts.height, opts),
-          20000
-        );
+        // Reinforce (hash script can race)
+        var place = stpBuildCanvasPlaceScript(opts.width, opts.height, opts);
+        return runPhotopeaScriptInTab(tab.id, place, 15000);
       }).then(function () {
         return reinforceCenterAndFit(tab.id);
       }).then(function () { return tab; });
     });
   }
 
-  // open
+  // mode === "open"
   var openUrl = stpBuildOpenUrl(dataUrl, settings);
+  console.log("STP: hash open url length=", openUrl.length);
+
   if (openUrl.length > 1.8e6) {
-    notifyError(t("alertManualCopy") || "Image too large.");
+    notifyError(t("alertManualCopy") || "Image too large for URL method.");
     return openTab(
       typeof stpBuildStartUrl === "function" ? stpBuildStartUrl(settings) : STP.PHOTOPEA_ORIGIN,
       openIn
     );
   }
-  return openTab(openUrl, openIn);
+
+  return openTab(openUrl, openIn).then(function (tab) {
+    // Optional fit after load (non-blocking for usability)
+    waitTabComplete(tab.id, 30000).then(function () {
+      return delay(1500);
+    }).then(function () {
+      return runPhotopeaScriptInTab(
+        tab.id,
+        "try { app.UI.fitTheArea(); } catch (e) {}",
+        5000
+      );
+    }).catch(function () { /* ignore */ });
+    return tab;
+  });
 }
 
 function openInPhotopea(payload) {
@@ -581,11 +556,12 @@ function openInPhotopea(payload) {
             }
           : null;
 
-        return openViaLiveMessaging(dataUrl, payload.mode, canvasOpts, settings)
-          .catch(function (err) {
-            console.warn("STP: messaging path failed, hash fallback", err);
-            return openViaHashFallback(dataUrl, payload.mode, canvasOpts || opts, settings);
-          });
+        // Hash first (immediate tab + proven). No long messaging hang.
+        return openViaHash(dataUrl, payload.mode, canvasOpts, settings).catch(function (err) {
+          console.error("STP: hash open failed", err);
+          notifyError(t("alertManualCopy") || "Could not open in Photopea.");
+          return openTab(STP.PHOTOPEA_ORIGIN, openIn);
+        });
       }
 
       return openTab(
@@ -646,7 +622,7 @@ function exportActivePhotopea(format, tabId) {
     return sendToBridge(tab.id, {
       type: "stp-export",
       format: meta.oe,
-      timeoutMs: 60000
+      timeoutMs: 25000
     }).then(function (res) {
       if (!res || !res.ok || !res.buffer) {
         notifyError(t("alertExportFailed") || "Could not export from Photopea.");
@@ -762,8 +738,11 @@ function handleImageAction(menuItemId, imageUrl, tab) {
     try { stpUnlockRemoteForPhotopea(imageUrl, 120000); } catch (e) { /* ignore */ }
   }
 
+  console.log("STP: handleImageAction", menuItemId, (imageUrl || "").slice(0, 80));
+
   return getOrFetchDataUrl(imageUrl, tabId, pageUrl)
     .then(function (dataUrl) {
+      if (!dataUrl) throw new Error("empty dataUrl");
       console.log("STP: got data URL, length=", dataUrl.length);
 
       if (menuItemId === "photopea-open" || menuItemId === "command-open") {
@@ -774,7 +753,7 @@ function handleImageAction(menuItemId, imageUrl, tab) {
         var presetId = String(menuItemId).replace("photopea-preset-", "");
         return getPresets().then(function (presets) {
           var preset = presets.find(function (p) { return p.id === presetId; });
-          if (!preset) throw new Error("preset not found");
+          if (!preset) throw new Error("preset not found: " + presetId);
           return openInPhotopea({
             mode: "canvas",
             dataUrl: dataUrl,
@@ -784,6 +763,8 @@ function handleImageAction(menuItemId, imageUrl, tab) {
           });
         });
       }
+
+      console.warn("STP: unknown menu id", menuItemId);
     })
     .catch(function (err) {
       console.error("Image action failed:", err);
@@ -792,7 +773,7 @@ function handleImageAction(menuItemId, imageUrl, tab) {
         "Could not extract the image. Copy Image → paste into Photopea (Ctrl+V)."
       );
 
-      // Soft fallback: blank Photopea / blank canvas only (no bridge messaging)
+      // Soft fallback: still open Photopea so user sees something
       if (menuItemId === "photopea-open" || menuItemId === "command-open") {
         return openTab(STP.PHOTOPEA_ORIGIN, "newTab");
       }
